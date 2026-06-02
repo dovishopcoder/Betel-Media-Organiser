@@ -6,7 +6,9 @@
     "dev": "node server.js",
     "build": "next build",
     "start": "node server.js",
-    "db:init": "node scripts/init-db.js"
+    "db:init": "node scripts/init-db.js",
+    "screen:main": "powershell -ExecutionPolicy Bypass -File scripts/launch-screen.ps1 -Route main-screen -Display secondary -Kiosk",
+    "screen:stage": "powershell -ExecutionPolicy Bypass -File scripts/launch-screen.ps1 -Route stage-screen -Display primary"
   },
   "dependencies": {
     "better-sqlite3": "^12.5.0",

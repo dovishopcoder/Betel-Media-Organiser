@@ -24,4 +24,20 @@ Open:
 - `http://localhost:3000/main-screen`
 - `http://localhost:3000/stage-screen`
 
+## Launch Screens
+
+For the audience HDMI screen, use kiosk mode so the room does not see browser chrome:
+
+```bash
+npm run screen:main
+```
+
+For the stage screen on the primary monitor:
+
+```bash
+npm run screen:stage
+```
+
+Exit kiosk mode with `Alt + F4`.
+
 Media files can be stored in `media/`. The local database is ignored by Git.
