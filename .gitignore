@@ -4,17 +4,25 @@ node_modules/
 # Build output
 dist/
 build/
+.next/
+out/
 
 # Environment
 .env
 .env.*
 
+# Local app data
+data/*.db
+data/*.db-*
+media/*
+!media/.gitkeep
+
 # Logs
 *.log
+npm-debug.log*
 
 # OS/editor
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
-
