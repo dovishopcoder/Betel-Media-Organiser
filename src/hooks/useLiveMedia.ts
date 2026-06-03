@@ -58,11 +58,11 @@ export function useLiveMedia() {
   }, []);
 
   const api = useMemo(() => ({
-    goLive(itemId: number, slideIndex = 0) {
+    goLive(itemId: number, slideIndex = 0, target: "main" | "stage" | "both" = "main") {
       return fetch("/api/live/go-live", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemId, slideIndex })
+        body: JSON.stringify({ itemId, slideIndex, target })
       });
     },
     next() {
@@ -79,8 +79,12 @@ export function useLiveMedia() {
         body: JSON.stringify({ direction: "previous" })
       });
     },
-    clear() {
-      return fetch("/api/live/clear", { method: "POST" });
+    clear(target: "main" | "stage" | "both" = "both") {
+      return fetch("/api/live/clear", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target })
+      });
     },
     createSong(input: { title: string; author?: string; lyrics: string }) {
       return fetch("/api/songs", {

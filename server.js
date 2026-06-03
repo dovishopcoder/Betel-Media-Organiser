@@ -5,7 +5,7 @@ const next = require("next");
 const { Server } = require("socket.io");
 const { ensureDatabase, getDb } = require("./src/server/db");
 const { createRepositories } = require("./src/server/repositories");
-const { createInitialLiveState, getNextSlide } = require("./src/server/live-state");
+const { createInitialLiveState, createOutputState, getNextSlide } = require("./src/server/live-state");
 const { getMainBackground, saveMainBackground } = require("./src/server/backgrounds");
 
 const dev = process.env.NODE_ENV !== "production";
@@ -63,18 +63,22 @@ app.prepare().then(() => {
   });
 
   expressApp.post("/api/live/go-live", (req, res) => {
-    const { itemId, slideIndex = 0 } = req.body;
+    const { itemId, slideIndex = 0, target = "main" } = req.body;
     const item = repos.programs.getItem(Number(itemId));
     if (!item) return res.status(404).json({ error: "Program item not found" });
 
     const slides = repos.slides.forProgramItem(item);
+    const output = createOutputState(item, slides, slideIndex);
+    const targets = target === "both" ? ["main", "stage"] : [target === "stage" ? "stage" : "main"];
+    const outputs = { ...liveState.outputs };
+    for (const screen of targets) {
+      outputs[screen] = output;
+    }
+
     liveState = {
       ...liveState,
-      currentItem: item,
-      currentSlideIndex: Math.max(0, Math.min(Number(slideIndex), slides.length - 1)),
-      currentSlide: slides[Math.max(0, Math.min(Number(slideIndex), slides.length - 1))] || null,
-      nextSlide: getNextSlide(slides, Number(slideIndex)),
-      activeOutput: "program",
+      outputs,
+      ...(outputs.main || output),
       updatedAt: new Date().toISOString()
     };
     io.emit("live:update", liveState);
@@ -89,6 +93,15 @@ app.prepare().then(() => {
     if (direction > 0 && liveState.currentSlideIndex >= slides.length - 1) {
       liveState = {
         ...liveState,
+        outputs: {
+          ...liveState.outputs,
+          main: {
+            ...liveState.outputs.main,
+            currentSlide: null,
+            nextSlide: null,
+            activeOutput: "blank"
+          }
+        },
         currentSlide: null,
         nextSlide: null,
         activeOutput: "blank",
@@ -104,6 +117,16 @@ app.prepare().then(() => {
     const nextIndex = Math.max(0, Math.min(targetIndex, slides.length - 1));
     liveState = {
       ...liveState,
+      outputs: {
+        ...liveState.outputs,
+        main: {
+          ...liveState.outputs.main,
+          currentSlideIndex: nextIndex,
+          currentSlide: slides[nextIndex] || null,
+          nextSlide: getNextSlide(slides, nextIndex),
+          activeOutput: slides[nextIndex] ? "program" : "blank"
+        }
+      },
       currentSlideIndex: nextIndex,
       currentSlide: slides[nextIndex] || null,
       nextSlide: getNextSlide(slides, nextIndex),
@@ -114,12 +137,23 @@ app.prepare().then(() => {
     res.json(liveState);
   });
 
-  expressApp.post("/api/live/clear", (_req, res) => {
+  expressApp.post("/api/live/clear", (req, res) => {
+    const { target = "both" } = req.body || {};
+    const targets = target === "both" ? ["main", "stage"] : [target === "stage" ? "stage" : "main"];
+    const outputs = { ...liveState.outputs };
+    for (const screen of targets) {
+      outputs[screen] = {
+        ...outputs[screen],
+        currentSlide: null,
+        nextSlide: null,
+        activeOutput: "blank"
+      };
+    }
+
     liveState = {
       ...liveState,
-      currentSlide: null,
-      nextSlide: null,
-      activeOutput: "blank",
+      outputs,
+      ...(outputs.main || {}),
       updatedAt: new Date().toISOString()
     };
     io.emit("live:update", liveState);

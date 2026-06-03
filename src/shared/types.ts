@@ -42,6 +42,10 @@ export type LiveState = {
   currentSlide: Slide | null;
   nextSlide: Slide | null;
   activeOutput: "program" | "blank";
+  outputs?: {
+    main: ScreenOutput;
+    stage: ScreenOutput;
+  };
   timer: {
     startedAt: string | null;
     durationSeconds: number | null;
@@ -49,4 +53,12 @@ export type LiveState = {
   programOrder: Program | null;
   libraryVersion: number;
   updatedAt: string;
+};
+
+export type ScreenOutput = {
+  currentItem: ProgramItem | null;
+  currentSlideIndex: number;
+  currentSlide: Slide | null;
+  nextSlide: Slide | null;
+  activeOutput: "program" | "blank";
 };

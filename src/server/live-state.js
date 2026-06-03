@@ -14,17 +14,36 @@ function getNextSlide(slides, currentIndex) {
   return slides[currentIndex + 1] || idleSlide;
 }
 
+function createOutputState(item, slides, slideIndex) {
+  const index = Math.max(0, Math.min(Number(slideIndex), Math.max(slides.length - 1, 0)));
+
+  return {
+    currentItem: item,
+    currentSlideIndex: index,
+    currentSlide: slides[index] || null,
+    nextSlide: getNextSlide(slides, index),
+    activeOutput: slides[index] ? "program" : "blank"
+  };
+}
+
 function createInitialLiveState(repos) {
   const activeProgram = repos.programs.getActiveWithItems();
   const firstItem = activeProgram?.items?.[0] || null;
   const slides = firstItem ? createSlidesForItem(firstItem) : [];
+  const mainOutput = createOutputState(firstItem, slides, 0);
 
   return {
-    currentItem: firstItem,
-    currentSlideIndex: 0,
-    currentSlide: slides[0] || null,
-    nextSlide: getNextSlide(slides, 0),
-    activeOutput: firstItem ? "program" : "blank",
+    ...mainOutput,
+    outputs: {
+      main: mainOutput,
+      stage: {
+        currentItem: null,
+        currentSlideIndex: 0,
+        currentSlide: null,
+        nextSlide: null,
+        activeOutput: "blank"
+      }
+    },
     timer: {
       startedAt: null,
       durationSeconds: null
@@ -36,6 +55,7 @@ function createInitialLiveState(repos) {
 }
 
 module.exports = {
+  createOutputState,
   createInitialLiveState,
   getNextSlide,
   idleSlide

@@ -48,6 +48,8 @@ export default function ControlPage() {
   }, [program, selectedItemId, liveState]);
 
   const selectedSlides = useMemo(() => slidesForItem(selectedItem), [selectedItem]);
+  const mainOutput = liveState?.outputs?.main || liveState;
+  const stageOutput = liveState?.outputs?.stage || liveState;
 
   async function handleBackgroundUpload(file: File | null) {
     if (!file) return;
@@ -126,8 +128,8 @@ export default function ControlPage() {
             <h2 className="title">{selectedItem?.title || "Selecteaza un element"}</h2>
             <div className="muted">{selectedItem?.notes || "Slide-urile apar aici."}</div>
           </div>
-          <button className="primary-btn" onClick={() => selectedItem && api.goLive(selectedItem.id, 0)}>
-            <Tv size={17} /> Go Live
+          <button className="primary-btn" onClick={() => selectedItem && api.goLive(selectedItem.id, 0, "both")}>
+            <Tv size={17} /> Go Live ambele
           </button>
         </div>
 
@@ -138,8 +140,8 @@ export default function ControlPage() {
           <button className="primary-btn" onClick={() => api.next()} title="Next">
             Next <ChevronRight size={18} />
           </button>
-          <button className="danger-btn" onClick={() => api.clear()} title="Blank">
-            <Square size={16} /> Blank
+          <button className="danger-btn" onClick={() => api.clear("both")} title="Blank">
+            <Square size={16} /> Blank ambele
           </button>
         </div>
 
@@ -148,11 +150,15 @@ export default function ControlPage() {
             <button
               className={`slide-tile ${liveState?.currentItem?.id === selectedItem?.id && liveState.currentSlideIndex === index ? "active" : ""}`}
               key={slide.id}
-              onClick={() => selectedItem && api.goLive(selectedItem.id, index)}
             >
               <div className="item-type">{slide.label}</div>
               <strong>{slide.title}</strong>
               <div className="slide-body-preview">{slide.body}</div>
+              <div className="send-actions">
+                <button onClick={() => selectedItem && api.goLive(selectedItem.id, index, "main")}>Sala</button>
+                <button onClick={() => selectedItem && api.goLive(selectedItem.id, index, "stage")}>Scena</button>
+                <button onClick={() => selectedItem && api.goLive(selectedItem.id, index, "both")}>Ambele</button>
+              </div>
             </button>
           ))}
         </div>
@@ -163,7 +169,7 @@ export default function ControlPage() {
           <h2 className="title">Ecrane</h2>
           <Monitor size={20} />
         </div>
-        <p className="muted">Output: {liveState?.activeOutput}</p>
+        <p className="muted">Alege separat ce apare pe fiecare ecran.</p>
 
         <div className="screen-monitor-grid">
           <section className="screen-monitor">
@@ -171,18 +177,22 @@ export default function ControlPage() {
               <span className="item-type">Ecran principal</span>
               <a className="muted" href="/main-screen" target="_blank">Deschide</a>
             </div>
-            <div className={`screen-preview main-preview ${liveState?.activeOutput === "blank" ? "idle" : ""}`}>
-              {liveState?.activeOutput === "blank" || !liveState?.currentSlide ? (
+            <div className={`screen-preview main-preview ${mainOutput?.activeOutput === "blank" ? "idle" : ""}`}>
+              {mainOutput?.activeOutput === "blank" || !mainOutput?.currentSlide ? (
                 <div
                   className="screen-preview-background"
                   style={{ backgroundImage: `url("${background.url}")` }}
                 />
               ) : (
                 <>
-                  <strong>{liveState.currentSlide.title}</strong>
-                  <div>{liveState.currentSlide.body}</div>
+                  <strong>{mainOutput.currentSlide.title}</strong>
+                  <div>{mainOutput.currentSlide.body}</div>
                 </>
               )}
+            </div>
+            <div className="screen-actions">
+              <button className="ghost-btn" onClick={() => selectedItem && api.goLive(selectedItem.id, 0, "main")}>Trimite selectia</button>
+              <button className="ghost-btn" onClick={() => api.clear("main")}>Blank</button>
             </div>
           </section>
 
@@ -191,29 +201,33 @@ export default function ControlPage() {
               <span className="item-type">Ecran scena</span>
               <a className="muted" href="/stage-screen" target="_blank">Deschide</a>
             </div>
-            <div className={`screen-preview main-preview ${liveState?.activeOutput === "blank" ? "idle" : ""}`}>
-              {liveState?.activeOutput === "blank" || !liveState?.currentSlide ? (
+            <div className={`screen-preview main-preview ${stageOutput?.activeOutput === "blank" ? "idle" : ""}`}>
+              {stageOutput?.activeOutput === "blank" || !stageOutput?.currentSlide ? (
                 <div
                   className="screen-preview-background"
                   style={{ backgroundImage: `url("${background.url}")` }}
                 />
               ) : (
                 <>
-                  <strong>{liveState.currentSlide.title}</strong>
-                  <div>{liveState.currentSlide.body}</div>
+                  <strong>{stageOutput.currentSlide.title}</strong>
+                  <div>{stageOutput.currentSlide.body}</div>
                 </>
               )}
+            </div>
+            <div className="screen-actions">
+              <button className="ghost-btn" onClick={() => selectedItem && api.goLive(selectedItem.id, 0, "stage")}>Trimite selectia</button>
+              <button className="ghost-btn" onClick={() => api.clear("stage")}>Blank</button>
             </div>
           </section>
         </div>
 
         <h3 className="title" style={{ marginTop: 24 }}>Urmeaza</h3>
-        <div className={`program-item ${liveState?.nextSlide?.type === "idle" ? "idle-next" : ""}`}>
-          <strong>{liveState?.nextSlide?.title || "Final element"}</strong>
+        <div className={`program-item ${mainOutput?.nextSlide?.type === "idle" ? "idle-next" : ""}`}>
+          <strong>{mainOutput?.nextSlide?.title || "Final element"}</strong>
           <div className="muted">
-            {liveState?.nextSlide?.type === "idle"
+            {mainOutput?.nextSlide?.type === "idle"
               ? "Next va afisa imaginea de fundal."
-              : liveState?.nextSlide?.body || "Nu exista slide urmator."}
+              : mainOutput?.nextSlide?.body || "Nu exista slide urmator."}
           </div>
         </div>
       </aside>

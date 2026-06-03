@@ -5,8 +5,9 @@ import { useLiveMedia } from "@/hooks/useLiveMedia";
 
 export default function MainScreenPage() {
   const { background, liveState, loading } = useLiveMedia();
-  const slide = liveState?.currentSlide;
-  const blank = loading || liveState?.activeOutput === "blank" || !slide;
+  const output = liveState?.outputs?.main || liveState;
+  const slide = output?.currentSlide;
+  const blank = loading || output?.activeOutput === "blank" || !slide;
 
   return (
     <main className={`screen main-output-screen ${blank ? "is-idle" : "is-live"}`}>
