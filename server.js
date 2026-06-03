@@ -9,7 +9,7 @@ const { ensureDatabase, getDb } = require("./src/server/db");
 const { createRepositories } = require("./src/server/repositories");
 const { createInitialLiveState, createOutputState, getNextSlide } = require("./src/server/live-state");
 const { getMainBackground, saveMainBackground } = require("./src/server/backgrounds");
-const { ensureLibraryDir, isAllowedMedia, sanitizeName, saveMediaFile } = require("./src/server/media-files");
+const { detectMediaType, ensureLibraryDir, isAllowedMedia, sanitizeName, saveMediaFile } = require("./src/server/media-files");
 
 const dev = process.env.NODE_ENV !== "production";
 const port = Number(process.env.PORT || 3000);
@@ -108,10 +108,11 @@ app.prepare().then(() => {
       if (!activeProgram) return res.status(404).json({ error: "Nu exista program activ." });
       if (!req.file) return res.status(400).json({ error: "Alege un fisier." });
 
-      const mediaType = req.body.mediaType;
+      const detectedMediaType = detectMediaType({ fileName: req.file.originalname, mimeType: req.file.mimetype });
+      const mediaType = detectedMediaType || req.body.mediaType;
       if (!isAllowedMedia({ fileName: req.file.originalname, mediaType, mimeType: req.file.mimetype })) {
         fs.unlinkSync(req.file.path);
-        return res.status(400).json({ error: "Tip de fisier neacceptat pentru acest compartiment." });
+        return res.status(400).json({ error: "Tip de fisier neacceptat. Alege audio, video, prezentare sau foloseste o extensie acceptata." });
       }
 
       const item = repos.programs.addItem(activeProgram.id, {

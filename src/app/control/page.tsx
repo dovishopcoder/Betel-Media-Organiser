@@ -37,6 +37,20 @@ function slidesForItem(item: ProgramItem | null) {
   }];
 }
 
+function detectMediaTypeFromFile(file: File): "audio" | "video" | "presentation" | null {
+  const extension = file.name.toLowerCase().split(".").pop() || "";
+  if (["mp3", "wav", "ogg", "m4a", "aac", "flac"].includes(extension) || file.type.startsWith("audio/")) {
+    return "audio";
+  }
+  if (["mp4", "webm", "mov", "mkv", "avi"].includes(extension) || file.type.startsWith("video/")) {
+    return "video";
+  }
+  if (["ppt", "pptx", "pps", "ppsx", "pdf"].includes(extension)) {
+    return "presentation";
+  }
+  return null;
+}
+
 export default function ControlPage() {
   const { program, background, liveState, loading, api } = useLiveMedia();
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
@@ -104,6 +118,17 @@ export default function ControlPage() {
     setMediaFile(null);
     setMediaTitle("");
     setMediaStatus("Fisierul a fost adaugat in program.");
+  }
+
+  function handleMediaFileChange(file: File | null) {
+    setMediaFile(file);
+    if (!file) return;
+
+    const detectedType = detectMediaTypeFromFile(file);
+    if (detectedType) {
+      setMediaType(detectedType);
+      setMediaStatus(`Tip detectat automat: ${detectedType === "presentation" ? "prezentare" : detectedType}.`);
+    }
   }
 
   if (loading) {
@@ -228,7 +253,7 @@ export default function ControlPage() {
               <input
                 accept=".ppt,.pptx,.pdf,audio/*,video/*"
                 type="file"
-                onChange={(event) => setMediaFile(event.target.files?.[0] || null)}
+                onChange={(event) => handleMediaFileChange(event.target.files?.[0] || null)}
               />
             </label>
             <button className="primary-btn" onClick={handleMediaUpload}>

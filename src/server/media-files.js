@@ -40,6 +40,19 @@ function sanitizeName(name) {
     .slice(0, 120);
 }
 
+function detectMediaType({ fileName, mimeType }) {
+  const extension = path.extname(fileName || "").toLowerCase();
+  for (const [mediaType, extensions] of Object.entries(allowedExtensions)) {
+    if (extensions.includes(extension)) return mediaType;
+  }
+
+  for (const [mediaType, mimeTypes] of Object.entries(allowedTypes)) {
+    if (mimeTypes.includes(mimeType)) return mediaType;
+  }
+
+  return null;
+}
+
 function isAllowedMedia({ fileName, mediaType, mimeType }) {
   const extension = path.extname(fileName || "").toLowerCase();
   const typeAllowed = allowedTypes[mediaType]?.includes(mimeType);
@@ -80,6 +93,7 @@ function saveMediaFile({ dataUrl, fileName, mediaType }) {
 }
 
 module.exports = {
+  detectMediaType,
   ensureLibraryDir,
   isAllowedMedia,
   sanitizeName,
