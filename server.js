@@ -69,11 +69,18 @@ app.prepare().then(() => {
 
     const slides = repos.slides.forProgramItem(item);
     const output = createOutputState(item, slides, slideIndex);
-    const targets = target === "both" ? ["main", "stage"] : [target === "stage" ? "stage" : "main"];
-    const outputs = { ...liveState.outputs };
-    for (const screen of targets) {
-      outputs[screen] = output;
-    }
+    const blankOutput = {
+      currentItem: null,
+      currentSlideIndex: 0,
+      currentSlide: null,
+      nextSlide: null,
+      activeOutput: "blank"
+    };
+    const outputs = target === "both"
+      ? { main: output, stage: output }
+      : target === "stage"
+        ? { main: blankOutput, stage: output }
+        : { main: output, stage: blankOutput };
 
     liveState = {
       ...liveState,
