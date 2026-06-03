@@ -106,11 +106,11 @@ export default function ControlPage() {
 
   async function handleMediaUpload() {
     if (!mediaFile) {
-      setMediaStatus("Alege mai intai un fisier.");
+      setMediaStatus("Alege mai intai un fisier local.");
       return;
     }
 
-    setMediaStatus("Se adauga fisierul in program...");
+    setMediaStatus("Se copiaza fisierul in biblioteca aplicatiei...");
     const response = await api.createMediaProgramItem({
       file: mediaFile,
       mediaType,
@@ -118,14 +118,14 @@ export default function ControlPage() {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: "Nu s-a putut salva fisierul." }));
+      const error = await response.json().catch(() => ({ error: "Nu s-a putut copia fisierul." }));
       setMediaStatus(error.error);
       return;
     }
 
     setMediaFile(null);
     setMediaTitle("");
-    setMediaStatus("Fisierul a fost adaugat in program.");
+    setMediaStatus("Fisierul a fost copiat si adaugat in program.");
   }
 
   function handleMediaFileChange(file: File | null) {
@@ -234,8 +234,8 @@ export default function ControlPage() {
         <section className="media-picker-panel">
           <div className="top-row">
             <div>
-              <h3 className="title">Adauga fisier in program</h3>
-              <div className="muted">Audio, video sau prezentare atasata programului curent.</div>
+              <h3 className="title">Alege fisier local</h3>
+              <div className="muted">Audio, video sau prezentare. Aplicatia pastreaza automat o copie pentru program.</div>
             </div>
             <FilePlus size={20} />
           </div>
@@ -256,19 +256,22 @@ export default function ControlPage() {
                 onChange={(event) => setMediaTitle(event.target.value)}
               />
             </label>
-            <label>
-              <span className="item-type">Fisier</span>
-              <input
-                accept=".ppt,.pptx,.pdf,audio/*,video/*"
-                type="file"
-                onChange={(event) => handleMediaFileChange(event.target.files?.[0] || null)}
-              />
-            </label>
+            <div className="media-file-field">
+              <span className="item-type">Fisier local</span>
+              <label className="primary-btn file-picker-btn">
+                <FilePlus size={16} /> Alege fisier
+                <input
+                  accept=".ppt,.pptx,.pdf,audio/*,video/*"
+                  type="file"
+                  onChange={(event) => handleMediaFileChange(event.target.files?.[0] || null)}
+                />
+              </label>
+            </div>
             <button className="primary-btn" onClick={handleMediaUpload}>
               Adauga in program
             </button>
           </div>
-          <div className="muted">{mediaStatus || (mediaFile ? mediaFile.name : "Fisierul va aparea ca punct nou in program.")}</div>
+          <div className="muted">{mediaStatus || (mediaFile ? mediaFile.name : "Alege un fisier de pe calculator; aplicatia il copiaza local.")}</div>
         </section>
       </section>
 
