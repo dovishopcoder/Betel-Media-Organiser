@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Monitor, Search, Square, Tv } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageUp, Monitor, Search, Square, Tv } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLiveMedia } from "@/hooks/useLiveMedia";
 import type { ProgramItem } from "@/shared/types";
@@ -38,9 +38,10 @@ function slidesForItem(item: ProgramItem | null) {
 }
 
 export default function ControlPage() {
-  const { songs, program, liveState, loading, api } = useLiveMedia();
+  const { songs, program, background, liveState, loading, api } = useLiveMedia();
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [query, setQuery] = useState("");
+  const [backgroundStatus, setBackgroundStatus] = useState("");
 
   const selectedItem = useMemo(() => {
     const items = program?.items || [];
@@ -49,6 +50,28 @@ export default function ControlPage() {
 
   const selectedSlides = useMemo(() => slidesForItem(selectedItem), [selectedItem]);
   const filteredSongs = songs.filter((song) => song.title.toLowerCase().includes(query.toLowerCase()));
+
+  async function handleBackgroundUpload(file: File | null) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setBackgroundStatus("Alege un fisier imagine.");
+      return;
+    }
+
+    setBackgroundStatus("Se incarca imaginea...");
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const response = await api.setMainBackground(String(reader.result));
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: "Nu s-a putut salva imaginea." }));
+        setBackgroundStatus(error.error);
+        return;
+      }
+      setBackgroundStatus("Imaginea de fundal a fost actualizata.");
+    };
+    reader.onerror = () => setBackgroundStatus("Nu s-a putut citi fisierul.");
+    reader.readAsDataURL(file);
+  }
 
   if (loading) {
     return <main className="screen"><div className="blank-output">Se incarca panoul media...</div></main>;
@@ -156,6 +179,23 @@ export default function ControlPage() {
               <div className="muted">{song.displayOrder.length} slide-uri</div>
             </div>
           ))}
+        </div>
+
+        <h3 className="title" style={{ marginTop: 24 }}>Fundal repaus</h3>
+        <div className="background-picker">
+          <div
+            className="background-preview"
+            style={{ backgroundImage: `url("${background.url}")` }}
+          />
+          <label className="primary-btn file-picker-btn">
+            <ImageUp size={16} /> Alege imagine
+            <input
+              accept="image/jpeg,image/png,image/webp"
+              type="file"
+              onChange={(event) => handleBackgroundUpload(event.target.files?.[0] || null)}
+            />
+          </label>
+          <div className="muted">{backgroundStatus || "Imagine folosita cand ecranul este Blank."}</div>
         </div>
       </aside>
     </main>

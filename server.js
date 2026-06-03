@@ -6,6 +6,7 @@ const { Server } = require("socket.io");
 const { ensureDatabase, getDb } = require("./src/server/db");
 const { createRepositories } = require("./src/server/repositories");
 const { createInitialLiveState, getNextSlide } = require("./src/server/live-state");
+const { getMainBackground, saveMainBackground } = require("./src/server/backgrounds");
 
 const dev = process.env.NODE_ENV !== "production";
 const port = Number(process.env.PORT || 3000);
@@ -23,7 +24,7 @@ app.prepare().then(() => {
   const repos = createRepositories(db);
   let liveState = createInitialLiveState(repos);
 
-  expressApp.use(express.json({ limit: "2mb" }));
+  expressApp.use(express.json({ limit: "12mb" }));
   expressApp.use("/media", express.static(path.join(__dirname, "media")));
 
   expressApp.get("/api/bootstrap", (_req, res) => {
@@ -32,8 +33,19 @@ app.prepare().then(() => {
       programs: repos.programs.list(),
       activeProgram: repos.programs.getActiveWithItems(),
       screens: repos.screens.list(),
+      background: getMainBackground(),
       liveState
     });
+  });
+
+  expressApp.post("/api/backgrounds/main", (req, res) => {
+    try {
+      const background = saveMainBackground(req.body);
+      io.emit("background:update", background);
+      res.json(background);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   });
 
   expressApp.post("/api/songs", (req, res) => {

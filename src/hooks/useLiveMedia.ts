@@ -7,6 +7,10 @@ import type { LiveState, Program, Song } from "@/shared/types";
 type Bootstrap = {
   songs: Song[];
   activeProgram: Program | null;
+  background: {
+    url: string;
+    exists: boolean;
+  };
   liveState: LiveState;
 };
 
@@ -20,6 +24,7 @@ function getSocket() {
 export function useLiveMedia() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [program, setProgram] = useState<Program | null>(null);
+  const [background, setBackground] = useState({ url: "/media/backgrounds/main.jpg", exists: false });
   const [liveState, setLiveState] = useState<LiveState | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,6 +37,7 @@ export function useLiveMedia() {
         if (!mounted) return;
         setSongs(data.songs);
         setProgram(data.activeProgram);
+        setBackground(data.background);
         setLiveState(data.liveState);
         setLoading(false);
       });
@@ -40,12 +46,14 @@ export function useLiveMedia() {
     mediaSocket.on("live:update", setLiveState);
     mediaSocket.on("program:update", setProgram);
     mediaSocket.on("library:update", (payload: { songs: Song[] }) => setSongs(payload.songs));
+    mediaSocket.on("background:update", setBackground);
 
     return () => {
       mounted = false;
       mediaSocket.off("live:update", setLiveState);
       mediaSocket.off("program:update", setProgram);
       mediaSocket.off("library:update");
+      mediaSocket.off("background:update");
     };
   }, []);
 
@@ -80,8 +88,15 @@ export function useLiveMedia() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input)
       });
+    },
+    setMainBackground(dataUrl: string) {
+      return fetch("/api/backgrounds/main", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dataUrl })
+      });
     }
   }), []);
 
-  return { songs, program, liveState, loading, api };
+  return { songs, program, background, liveState, loading, api };
 }

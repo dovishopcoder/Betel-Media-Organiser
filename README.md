@@ -42,9 +42,11 @@ Exit kiosk mode with `Alt + F4`.
 
 ## Main Screen Background
 
-The audience screen uses `media/backgrounds/main.jpg` only when the output is
+The audience screen uses the configured background only when the output is
 blank/idle. During songs or other live content, the slide is shown cleanly
-without that background image. Replace `main.jpg` locally when you want a
-different idle background.
+without that background image.
+
+Set the idle background from `/control` in the `Fundal repaus` panel. Uploaded
+images are stored locally in `media/backgrounds/` and are ignored by Git.
 
 Media files can be stored in `media/`. The local database is ignored by Git.

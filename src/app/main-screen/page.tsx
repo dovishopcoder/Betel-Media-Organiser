@@ -1,9 +1,10 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useLiveMedia } from "@/hooks/useLiveMedia";
 
 export default function MainScreenPage() {
-  const { liveState, loading } = useLiveMedia();
+  const { background, liveState, loading } = useLiveMedia();
   const slide = liveState?.currentSlide;
   const blank = loading || liveState?.activeOutput === "blank" || !slide;
 
@@ -11,7 +12,11 @@ export default function MainScreenPage() {
     <main className={`screen main-output-screen ${blank ? "is-idle" : "is-live"}`}>
       {blank ? (
         <>
-          <div className="main-background" aria-hidden="true" />
+          <div
+            className="main-background"
+            style={{ "--main-background-url": `url("${background.url}")` } as CSSProperties}
+            aria-hidden="true"
+          />
           <div className="main-background-overlay" aria-hidden="true" />
         </>
       ) : null}
