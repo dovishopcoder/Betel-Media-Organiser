@@ -94,50 +94,40 @@ app.prepare().then(() => {
 
   expressApp.post("/api/live/step", (req, res) => {
     const direction = req.body.direction === "previous" ? -1 : 1;
-    if (!liveState.currentItem) return res.json(liveState);
-    const slides = repos.slides.forProgramItem(liveState.currentItem);
+    const stepOutput = (output) => {
+      if (!output?.currentItem || output.activeOutput !== "program") {
+        return output;
+      }
 
-    if (direction > 0 && liveState.currentSlideIndex >= slides.length - 1) {
-      liveState = {
-        ...liveState,
-        outputs: {
-          ...liveState.outputs,
-          main: {
-            ...liveState.outputs.main,
-            currentSlide: null,
-            nextSlide: null,
-            activeOutput: "background"
-          }
-        },
-        currentSlide: null,
-        nextSlide: null,
-        activeOutput: "background",
-        updatedAt: new Date().toISOString()
+      const slides = repos.slides.forProgramItem(output.currentItem);
+      if (direction > 0 && output.currentSlideIndex >= slides.length - 1) {
+        return {
+          ...output,
+          currentSlide: null,
+          nextSlide: null,
+          activeOutput: "background"
+        };
+      }
+
+      const nextIndex = Math.max(0, Math.min(output.currentSlideIndex + direction, slides.length - 1));
+      return {
+        ...output,
+        currentSlideIndex: nextIndex,
+        currentSlide: slides[nextIndex] || null,
+        nextSlide: getNextSlide(slides, nextIndex),
+        activeOutput: slides[nextIndex] ? "program" : "background"
       };
-      io.emit("live:update", liveState);
-      return res.json(liveState);
-    }
+    };
 
-    const targetIndex = liveState.activeOutput === "background" && direction < 0
-      ? slides.length - 1
-      : liveState.currentSlideIndex + direction;
-    const nextIndex = Math.max(0, Math.min(targetIndex, slides.length - 1));
+    const outputs = {
+      main: stepOutput(liveState.outputs.main),
+      stage: stepOutput(liveState.outputs.stage)
+    };
+
     liveState = {
       ...liveState,
-      outputs: {
-        ...liveState.outputs,
-        main: {
-          ...liveState.outputs.main,
-          currentSlideIndex: nextIndex,
-          currentSlide: slides[nextIndex] || null,
-          nextSlide: getNextSlide(slides, nextIndex),
-          activeOutput: slides[nextIndex] ? "program" : "background"
-        }
-      },
-      currentSlideIndex: nextIndex,
-      currentSlide: slides[nextIndex] || null,
-      nextSlide: getNextSlide(slides, nextIndex),
-      activeOutput: slides[nextIndex] ? "program" : "background",
+      outputs,
+      ...(outputs.main || {}),
       updatedAt: new Date().toISOString()
     };
     io.emit("live:update", liveState);
