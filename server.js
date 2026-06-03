@@ -25,7 +25,7 @@ app.prepare().then(() => {
   const repos = createRepositories(db);
   let liveState = createInitialLiveState(repos);
 
-  expressApp.use(express.json({ limit: "12mb" }));
+  expressApp.use(express.json({ limit: "350mb" }));
   expressApp.use("/media", express.static(path.join(__dirname, "media")));
 
   expressApp.get("/api/bootstrap", (_req, res) => {

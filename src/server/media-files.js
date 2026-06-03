@@ -23,6 +23,11 @@ const allowedTypes = {
     "application/pdf"
   ]
 };
+const allowedExtensions = {
+  audio: [".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"],
+  video: [".mp4", ".webm", ".ogg", ".mov", ".mkv", ".avi"],
+  presentation: [".ppt", ".pptx", ".pps", ".ppsx", ".pdf"]
+};
 
 function ensureLibraryDir() {
   fs.mkdirSync(libraryDir, { recursive: true });
@@ -42,7 +47,11 @@ function saveMediaFile({ dataUrl, fileName, mediaType }) {
   }
 
   const mimeType = match[1];
-  if (!allowedTypes[mediaType]?.includes(mimeType)) {
+  const extension = path.extname(fileName || "").toLowerCase();
+  const typeAllowed = allowedTypes[mediaType]?.includes(mimeType);
+  const extensionAllowed = allowedExtensions[mediaType]?.includes(extension);
+
+  if (!typeAllowed && !extensionAllowed) {
     throw new Error("Tip de fisier neacceptat pentru acest compartiment.");
   }
 
