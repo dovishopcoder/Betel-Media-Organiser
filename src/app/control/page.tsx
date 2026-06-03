@@ -62,7 +62,7 @@ export default function ControlPage() {
           <a className="muted" href="/main-screen" target="_blank">Main</a>
           <a className="muted" href="/stage-screen" target="_blank">Stage</a>
         </div>
-        <p className="muted">{program?.title || "Fara program activ"} · {program?.service_date}</p>
+        <p className="muted">{program?.title || "Fara program activ"} - {program?.service_date}</p>
         <div className="item-list">
           {program?.items.map((item) => (
             <button
@@ -129,9 +129,13 @@ export default function ControlPage() {
         </div>
 
         <h3 className="title" style={{ marginTop: 24 }}>Urmeaza</h3>
-        <div className="program-item">
+        <div className={`program-item ${liveState?.nextSlide?.type === "idle" ? "idle-next" : ""}`}>
           <strong>{liveState?.nextSlide?.title || "Final element"}</strong>
-          <div className="muted">{liveState?.nextSlide?.body || "Nu exista slide urmator."}</div>
+          <div className="muted">
+            {liveState?.nextSlide?.type === "idle"
+              ? "Next va afisa imaginea de fundal."
+              : liveState?.nextSlide?.body || "Nu exista slide urmator."}
+          </div>
         </div>
 
         <h3 className="title" style={{ marginTop: 24 }}>Biblioteca cantari</h3>

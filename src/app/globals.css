@@ -122,6 +122,11 @@ button:disabled {
   box-shadow: inset 4px 0 0 var(--live);
 }
 
+.program-item.idle-next {
+  border-color: var(--accent);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
 .item-type {
   color: var(--muted);
   font-size: 12px;

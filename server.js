@@ -73,12 +73,29 @@ app.prepare().then(() => {
     const direction = req.body.direction === "previous" ? -1 : 1;
     if (!liveState.currentItem) return res.json(liveState);
     const slides = repos.slides.forProgramItem(liveState.currentItem);
-    const nextIndex = Math.max(0, Math.min(liveState.currentSlideIndex + direction, slides.length - 1));
+
+    if (direction > 0 && liveState.currentSlideIndex >= slides.length - 1) {
+      liveState = {
+        ...liveState,
+        currentSlide: null,
+        nextSlide: null,
+        activeOutput: "blank",
+        updatedAt: new Date().toISOString()
+      };
+      io.emit("live:update", liveState);
+      return res.json(liveState);
+    }
+
+    const targetIndex = liveState.activeOutput === "blank" && direction < 0
+      ? slides.length - 1
+      : liveState.currentSlideIndex + direction;
+    const nextIndex = Math.max(0, Math.min(targetIndex, slides.length - 1));
     liveState = {
       ...liveState,
       currentSlideIndex: nextIndex,
       currentSlide: slides[nextIndex] || null,
       nextSlide: getNextSlide(slides, nextIndex),
+      activeOutput: slides[nextIndex] ? "program" : "blank",
       updatedAt: new Date().toISOString()
     };
     io.emit("live:update", liveState);

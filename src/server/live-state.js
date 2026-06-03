@@ -1,7 +1,17 @@
 const { createSlidesForItem } = require("./repositories");
 
+const idleSlide = {
+  id: "idle-background",
+  type: "idle",
+  label: "fundal",
+  title: "Imagine de fundal",
+  body: "Ecran in repaus",
+  notes: "",
+  sortOrder: 9999
+};
+
 function getNextSlide(slides, currentIndex) {
-  return slides[currentIndex + 1] || null;
+  return slides[currentIndex + 1] || idleSlide;
 }
 
 function createInitialLiveState(repos) {
@@ -27,5 +37,6 @@ function createInitialLiveState(repos) {
 
 module.exports = {
   createInitialLiveState,
-  getNextSlide
+  getNextSlide,
+  idleSlide
 };
