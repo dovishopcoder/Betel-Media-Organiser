@@ -21,7 +21,7 @@ export default function MainScreenPage() {
         </>
       ) : null}
       {blank ? (
-        <div className="blank-output main-output-content">BETEL</div>
+        <div className="main-output-content" aria-label="Ecran in repaus" />
       ) : (
         <section className="main-output-content">
           <div className="main-slide-title">{slide.title}</div>
