@@ -46,7 +46,7 @@ button:disabled {
 
 .control-shell {
   display: grid;
-  grid-template-columns: minmax(250px, 320px) minmax(360px, 1fr) minmax(260px, 360px);
+  grid-template-columns: minmax(250px, 320px) minmax(320px, 0.86fr) minmax(360px, 460px);
   min-height: 100vh;
 }
 
