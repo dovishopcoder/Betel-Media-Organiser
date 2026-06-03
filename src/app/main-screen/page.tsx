@@ -7,7 +7,7 @@ export default function MainScreenPage() {
   const { background, liveState, loading } = useLiveMedia();
   const output = liveState?.outputs?.main || liveState;
   const slide = output?.currentSlide;
-  const blank = loading || output?.activeOutput === "background" || !slide;
+  const blank = loading || output?.activeOutput === "background" || !slide || slide.type === "audio";
 
   return (
     <main className={`screen main-output-screen ${blank ? "is-idle" : "is-live"}`}>
@@ -27,12 +27,6 @@ export default function MainScreenPage() {
         <section className="main-output-content">
           {slide.type === "video" && slide.filePath ? (
             <video className="media-output-video" src={slide.filePath} controls autoPlay />
-          ) : slide.type === "audio" && slide.filePath ? (
-            <>
-              <div className="main-slide-title">Audio</div>
-              <div className="main-slide-body">{slide.title}</div>
-              <audio src={slide.filePath} controls autoPlay />
-            </>
           ) : slide.type === "presentation" && slide.filePath ? (
             <>
               <div className="main-slide-title">Prezentare atasata</div>

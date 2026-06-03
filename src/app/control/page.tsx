@@ -54,6 +54,11 @@ export default function ControlPage() {
   const selectedSlides = useMemo(() => slidesForItem(selectedItem), [selectedItem]);
   const mainOutput = liveState?.outputs?.main || liveState;
   const stageOutput = liveState?.outputs?.stage || liveState;
+  const activeAudio = mainOutput?.currentSlide?.type === "audio" && mainOutput.currentSlide.filePath
+    ? mainOutput.currentSlide
+    : stageOutput?.currentSlide?.type === "audio" && stageOutput.currentSlide.filePath
+      ? stageOutput.currentSlide
+      : null;
 
   async function handleBackgroundUpload(file: File | null) {
     if (!file) return;
@@ -246,6 +251,15 @@ export default function ControlPage() {
           <Monitor size={20} />
         </div>
         <p className="muted">Alege separat ce apare pe fiecare ecran.</p>
+
+        {activeAudio ? (
+          <section className="audio-control-panel">
+            <div className="item-type">Redare audio</div>
+            <strong>{activeAudio.title}</strong>
+            <audio key={activeAudio.filePath} src={activeAudio.filePath || ""} controls autoPlay />
+            <div className="muted">Ecranele raman pe fundal; sunetul se reda din panoul operator.</div>
+          </section>
+        ) : null}
 
         <div className="screen-monitor-grid">
           <section className="screen-monitor">
