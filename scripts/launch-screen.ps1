@@ -43,6 +43,7 @@ $arguments = @(
   "--new-window",
   "--user-data-dir=$profileDir",
   "--no-first-run",
+  "--autoplay-policy=no-user-gesture-required",
   "--window-position=$($bounds.X),$($bounds.Y)",
   "--window-size=$($bounds.Width),$($bounds.Height)"
 )
@@ -61,4 +62,3 @@ if ($Kiosk) {
 }
 
 Start-Process -FilePath $edgePath -ArgumentList $arguments
-

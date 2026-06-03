@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, FilePlus, ImageUp, Monitor, Square, Tv } from "lucide-react";
+import { ChevronLeft, ChevronRight, FilePlus, ImageUp, Monitor, Pause, Play, RotateCcw, Square, Tv } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLiveMedia } from "@/hooks/useLiveMedia";
 import type { ProgramItem } from "@/shared/types";
@@ -73,6 +73,14 @@ export default function ControlPage() {
     : stageOutput?.currentSlide?.type === "audio" && stageOutput.currentSlide.filePath
       ? stageOutput.currentSlide
       : null;
+  const mainVideoLive = mainOutput?.activeOutput === "program" && mainOutput.currentSlide?.type === "video" && mainOutput.currentSlide.filePath;
+  const stageVideoLive = stageOutput?.activeOutput === "program" && stageOutput.currentSlide?.type === "video" && stageOutput.currentSlide.filePath;
+  const activeVideo = mainVideoLive
+    ? mainOutput.currentSlide
+    : stageVideoLive
+      ? stageOutput.currentSlide
+      : null;
+  const activeVideoTarget = mainVideoLive && stageVideoLive ? "both" : mainVideoLive ? "main" : "stage";
 
   async function handleBackgroundUpload(file: File | null) {
     if (!file) return;
@@ -277,6 +285,25 @@ export default function ControlPage() {
             <strong>{activeAudio.title}</strong>
             <audio key={activeAudio.filePath} src={activeAudio.filePath || ""} controls autoPlay />
             <div className="muted">Ecranele raman pe fundal; sunetul se reda din panoul operator.</div>
+          </section>
+        ) : null}
+
+        {activeVideo ? (
+          <section className="video-control-panel">
+            <div className="item-type">Control video</div>
+            <strong>{activeVideo.title}</strong>
+            <div className="video-control-actions">
+              <button className="primary-btn" onClick={() => api.videoControl(activeVideoTarget, "play")}>
+                <Play size={16} /> Play
+              </button>
+              <button className="ghost-btn" onClick={() => api.videoControl(activeVideoTarget, "pause")}>
+                <Pause size={16} /> Pause
+              </button>
+              <button className="ghost-btn" onClick={() => api.videoControl(activeVideoTarget, "restart")}>
+                <RotateCcw size={16} /> Restart
+              </button>
+            </div>
+            <div className="muted">Video-ul ruleaza pe ecranul selectat; comenzile se trimit din panoul operator.</div>
           </section>
         ) : null}
 

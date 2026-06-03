@@ -252,6 +252,25 @@ app.prepare().then(() => {
     res.json(liveState);
   });
 
+  expressApp.post("/api/live/video-control", (req, res) => {
+    const { target = "both", action } = req.body || {};
+    const validTargets = ["main", "stage", "both"];
+    const validActions = ["play", "pause", "restart"];
+
+    if (!validTargets.includes(target) || !validActions.includes(action)) {
+      return res.status(400).json({ error: "Comanda video invalida." });
+    }
+
+    const command = {
+      target,
+      action,
+      issuedAt: new Date().toISOString()
+    };
+
+    io.emit("video:control", command);
+    res.json(command);
+  });
+
   io.on("connection", (socket) => {
     socket.emit("live:update", liveState);
     socket.emit("program:update", repos.programs.getActiveWithItems());

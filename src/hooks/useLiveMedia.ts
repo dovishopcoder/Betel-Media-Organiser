@@ -21,6 +21,10 @@ function getSocket() {
   return socket;
 }
 
+export function getLiveMediaSocket() {
+  return getSocket();
+}
+
 export function useLiveMedia() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [program, setProgram] = useState<Program | null>(null);
@@ -84,6 +88,13 @@ export function useLiveMedia() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ target })
+      });
+    },
+    videoControl(target: "main" | "stage" | "both", action: "play" | "pause" | "restart") {
+      return fetch("/api/live/video-control", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target, action })
       });
     },
     createSong(input: { title: string; author?: string; lyrics: string }) {

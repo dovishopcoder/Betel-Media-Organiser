@@ -307,7 +307,8 @@ button:disabled {
   margin-top: 12px;
 }
 
-.audio-control-panel {
+.audio-control-panel,
+.video-control-panel {
   border: 1px solid var(--line);
   border-radius: 8px;
   display: grid;
@@ -318,6 +319,21 @@ button:disabled {
 
 .audio-control-panel audio {
   width: 100%;
+}
+
+.video-control-actions {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.video-control-actions button {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 8px;
 }
 
 .screen-monitor {
