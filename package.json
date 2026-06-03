@@ -10,7 +10,7 @@
     "package:portable": "powershell -ExecutionPolicy Bypass -File scripts/make-portable.ps1",
     "start:windows": "powershell -ExecutionPolicy Bypass -File scripts/start-app.ps1",
     "screen:main": "powershell -ExecutionPolicy Bypass -File scripts/launch-screen.ps1 -Route main-screen -Display secondary -Kiosk",
-    "screen:stage": "powershell -ExecutionPolicy Bypass -File scripts/launch-screen.ps1 -Route stage-screen -Display primary"
+    "screen:stage": "powershell -ExecutionPolicy Bypass -File scripts/launch-screen.ps1 -Route stage-screen -Display primary -Kiosk"
   },
   "dependencies": {
     "better-sqlite3": "^12.5.0",
