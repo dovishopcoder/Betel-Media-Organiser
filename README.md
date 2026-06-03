@@ -40,4 +40,10 @@ npm run screen:stage
 
 Exit kiosk mode with `Alt + F4`.
 
+## Main Screen Background
+
+The audience screen uses `media/backgrounds/main.jpg` as its background image.
+Replace that file locally when you want a different church background. The app
+keeps the lyrics as a separate layer over the image.
+
 Media files can be stored in `media/`. The local database is ignored by Git.

@@ -187,9 +187,47 @@ button:disabled {
   text-align: center;
 }
 
+.main-output-screen {
+  position: relative;
+}
+
+.main-background,
+.main-background-overlay {
+  inset: 0;
+  position: absolute;
+}
+
+.main-background {
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.08), transparent 42%),
+    linear-gradient(135deg, #172026, #05070a);
+}
+
+.main-background::after {
+  background-image: url("/media/backgrounds/main.jpg");
+  background-position: center;
+  background-size: cover;
+  content: "";
+  inset: 0;
+  opacity: 1;
+  position: absolute;
+}
+
+.main-background-overlay {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.58)),
+    radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.34) 74%);
+}
+
+.main-output-content {
+  position: relative;
+  z-index: 1;
+}
+
 .main-slide-title {
   font-size: 34px;
   margin-bottom: 34px;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.65);
 }
 
 .main-slide-body {
@@ -197,12 +235,14 @@ button:disabled {
   font-weight: 700;
   line-height: 1.14;
   max-width: 1500px;
+  text-shadow: 0 3px 22px rgba(0, 0, 0, 0.82);
   white-space: pre-line;
 }
 
 .blank-output {
-  color: #475467;
+  color: rgba(255, 255, 255, 0.72);
   font-size: 36px;
+  letter-spacing: 0;
 }
 
 .stage-screen {

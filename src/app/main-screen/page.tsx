@@ -8,11 +8,13 @@ export default function MainScreenPage() {
   const blank = loading || liveState?.activeOutput === "blank" || !slide;
 
   return (
-    <main className="screen">
+    <main className="screen main-output-screen">
+      <div className="main-background" aria-hidden="true" />
+      <div className="main-background-overlay" aria-hidden="true" />
       {blank ? (
-        <div className="blank-output">BETEL</div>
+        <div className="blank-output main-output-content">BETEL</div>
       ) : (
-        <section>
+        <section className="main-output-content">
           <div className="main-slide-title">{slide.title}</div>
           <div className="main-slide-body">{slide.body}</div>
         </section>
