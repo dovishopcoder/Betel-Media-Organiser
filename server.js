@@ -7,6 +7,7 @@ const { ensureDatabase, getDb } = require("./src/server/db");
 const { createRepositories } = require("./src/server/repositories");
 const { createInitialLiveState, createOutputState, getNextSlide } = require("./src/server/live-state");
 const { getMainBackground, saveMainBackground } = require("./src/server/backgrounds");
+const { saveMediaFile } = require("./src/server/media-files");
 
 const dev = process.env.NODE_ENV !== "production";
 const port = Number(process.env.PORT || 3000);
@@ -60,6 +61,27 @@ app.prepare().then(() => {
     liveState.programOrder = repos.programs.getActiveWithItems();
     io.emit("program:update", liveState.programOrder);
     res.status(201).json(item);
+  });
+
+  expressApp.post("/api/media/program-item", (req, res) => {
+    try {
+      const activeProgram = repos.programs.getActiveWithItems();
+      if (!activeProgram) return res.status(404).json({ error: "Nu exista program activ." });
+
+      const media = saveMediaFile(req.body);
+      const item = repos.programs.addItem(activeProgram.id, {
+        type: req.body.mediaType,
+        title: req.body.title || media.originalName,
+        filePath: media.filePath,
+        notes: req.body.notes || media.originalName
+      });
+
+      liveState.programOrder = repos.programs.getActiveWithItems();
+      io.emit("program:update", liveState.programOrder);
+      res.status(201).json({ item, media, program: liveState.programOrder });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   });
 
   expressApp.post("/api/live/go-live", (req, res) => {

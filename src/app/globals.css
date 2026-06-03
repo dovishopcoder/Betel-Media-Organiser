@@ -227,6 +227,34 @@ button:disabled {
   white-space: pre-line;
 }
 
+.media-picker-panel {
+  border-top: 1px solid var(--line);
+  margin-top: 22px;
+  padding-top: 16px;
+}
+
+.media-picker-grid {
+  align-items: end;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 150px minmax(180px, 1fr) minmax(220px, 1fr) auto;
+  margin: 12px 0 8px;
+}
+
+.media-picker-grid label {
+  display: grid;
+  gap: 5px;
+}
+
+.media-picker-grid input,
+.media-picker-grid select {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  min-height: 38px;
+  padding: 0 10px;
+  width: 100%;
+}
+
 .screen-actions {
   display: flex;
   gap: 6px;
@@ -402,6 +430,13 @@ button:disabled {
   line-height: 1.14;
   max-width: 1500px;
   white-space: pre-line;
+}
+
+.media-output-video {
+  background: #000;
+  max-height: 86vh;
+  max-width: 92vw;
+  width: 100%;
 }
 
 .blank-output {

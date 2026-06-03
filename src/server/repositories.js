@@ -60,6 +60,7 @@ function createSlidesForItem(item) {
       label: item.type,
       title: item.title,
       body: item.notes || item.title,
+      filePath: item.filePath || null,
       notes: item.notes || "",
       sortOrder: 0
     }

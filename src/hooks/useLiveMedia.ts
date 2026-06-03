@@ -99,6 +99,19 @@ export function useLiveMedia() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dataUrl })
       });
+    },
+    createMediaProgramItem(input: {
+      dataUrl: string;
+      fileName: string;
+      mediaType: "audio" | "video" | "presentation";
+      title: string;
+      notes?: string;
+    }) {
+      return fetch("/api/media/program-item", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input)
+      });
     }
   }), []);
 

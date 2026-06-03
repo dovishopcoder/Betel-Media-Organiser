@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, ImageUp, Monitor, Square, Tv } from "lucide-react";
+import { ChevronLeft, ChevronRight, FilePlus, ImageUp, Monitor, Square, Tv } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLiveMedia } from "@/hooks/useLiveMedia";
 import type { ProgramItem } from "@/shared/types";
@@ -41,6 +41,10 @@ export default function ControlPage() {
   const { program, background, liveState, loading, api } = useLiveMedia();
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [backgroundStatus, setBackgroundStatus] = useState("");
+  const [mediaType, setMediaType] = useState<"audio" | "video" | "presentation">("presentation");
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaTitle, setMediaTitle] = useState("");
+  const [mediaStatus, setMediaStatus] = useState("");
 
   const selectedItem = useMemo(() => {
     const items = program?.items || [];
@@ -71,6 +75,36 @@ export default function ControlPage() {
     };
     reader.onerror = () => setBackgroundStatus("Nu s-a putut citi fisierul.");
     reader.readAsDataURL(file);
+  }
+
+  async function handleMediaUpload() {
+    if (!mediaFile) {
+      setMediaStatus("Alege mai intai un fisier.");
+      return;
+    }
+
+    setMediaStatus("Se adauga fisierul in program...");
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const response = await api.createMediaProgramItem({
+        dataUrl: String(reader.result),
+        fileName: mediaFile.name,
+        mediaType,
+        title: mediaTitle.trim() || mediaFile.name
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: "Nu s-a putut salva fisierul." }));
+        setMediaStatus(error.error);
+        return;
+      }
+
+      setMediaFile(null);
+      setMediaTitle("");
+      setMediaStatus("Fisierul a fost adaugat in program.");
+    };
+    reader.onerror = () => setMediaStatus("Nu s-a putut citi fisierul.");
+    reader.readAsDataURL(mediaFile);
   }
 
   if (loading) {
@@ -164,6 +198,46 @@ export default function ControlPage() {
             </button>
           ))}
         </div>
+
+        <section className="media-picker-panel">
+          <div className="top-row">
+            <div>
+              <h3 className="title">Adauga fisier in program</h3>
+              <div className="muted">Audio, video sau prezentare atasata programului curent.</div>
+            </div>
+            <FilePlus size={20} />
+          </div>
+          <div className="media-picker-grid">
+            <label>
+              <span className="item-type">Tip</span>
+              <select value={mediaType} onChange={(event) => setMediaType(event.target.value as typeof mediaType)}>
+                <option value="presentation">Prezentare</option>
+                <option value="video">Video</option>
+                <option value="audio">Audio</option>
+              </select>
+            </label>
+            <label>
+              <span className="item-type">Titlu</span>
+              <input
+                placeholder="Titlu afisat in program"
+                value={mediaTitle}
+                onChange={(event) => setMediaTitle(event.target.value)}
+              />
+            </label>
+            <label>
+              <span className="item-type">Fisier</span>
+              <input
+                accept=".ppt,.pptx,.pdf,audio/*,video/*"
+                type="file"
+                onChange={(event) => setMediaFile(event.target.files?.[0] || null)}
+              />
+            </label>
+            <button className="primary-btn" onClick={handleMediaUpload}>
+              Adauga in program
+            </button>
+          </div>
+          <div className="muted">{mediaStatus || (mediaFile ? mediaFile.name : "Fisierul va aparea ca punct nou in program.")}</div>
+        </section>
       </section>
 
       <aside className="live-panel">

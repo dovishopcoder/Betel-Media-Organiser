@@ -25,8 +25,25 @@ export default function StageScreenPage() {
         <div className="main-output-content" aria-label="Ecran scena in repaus" />
       ) : (
         <section className="main-output-content">
-          <div className="main-slide-title">{slide.title}</div>
-          <div className="main-slide-body">{slide.body}</div>
+          {slide.type === "video" && slide.filePath ? (
+            <video className="media-output-video" src={slide.filePath} controls autoPlay />
+          ) : slide.type === "audio" && slide.filePath ? (
+            <>
+              <div className="main-slide-title">Audio</div>
+              <div className="main-slide-body">{slide.title}</div>
+              <audio src={slide.filePath} controls autoPlay />
+            </>
+          ) : slide.type === "presentation" && slide.filePath ? (
+            <>
+              <div className="main-slide-title">Prezentare atasata</div>
+              <div className="main-slide-body">{slide.title}</div>
+            </>
+          ) : (
+            <>
+              <div className="main-slide-title">{slide.title}</div>
+              <div className="main-slide-body">{slide.body}</div>
+            </>
+          )}
         </section>
       )}
     </main>

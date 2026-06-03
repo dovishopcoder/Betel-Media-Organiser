@@ -12,6 +12,7 @@ export type Slide = {
   label: string;
   title: string;
   body: string;
+  filePath?: string | null;
   notes?: string;
   sortOrder: number;
 };
