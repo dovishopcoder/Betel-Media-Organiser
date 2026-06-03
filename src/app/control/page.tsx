@@ -89,15 +89,21 @@ export default function ControlPage() {
           <p className="muted">{program?.title || "Fara program activ"} - {program?.service_date}</p>
           <div className="item-list">
             {program?.items.map((item) => (
-              <button
+              <div
                 className={`program-item ${liveState?.currentItem?.id === item.id ? "live" : ""}`}
                 key={item.id}
-                onClick={() => setSelectedItemId(item.id)}
               >
-                <div className="item-type">{itemLabels[item.type] || item.type}</div>
-                <strong>{item.title}</strong>
-                {item.song ? <div className="muted">{item.song.title}</div> : null}
-              </button>
+                <button className="program-select" onClick={() => setSelectedItemId(item.id)}>
+                  <div className="item-type">{itemLabels[item.type] || item.type}</div>
+                  <strong>{item.title}</strong>
+                  {item.song ? <div className="muted">{item.song.title}</div> : null}
+                </button>
+                <div className="program-send-actions">
+                  <button onClick={() => api.goLive(item.id, 0, "main")}>Sala</button>
+                  <button onClick={() => api.goLive(item.id, 0, "stage")}>Scena</button>
+                  <button onClick={() => api.goLive(item.id, 0, "both")}>Ambele</button>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -150,15 +156,11 @@ export default function ControlPage() {
             <button
               className={`slide-tile ${liveState?.currentItem?.id === selectedItem?.id && liveState.currentSlideIndex === index ? "active" : ""}`}
               key={slide.id}
+              onClick={() => selectedItem && api.goLive(selectedItem.id, index, "both")}
             >
               <div className="item-type">{slide.label}</div>
               <strong>{slide.title}</strong>
               <div className="slide-body-preview">{slide.body}</div>
-              <div className="send-actions">
-                <button onClick={() => selectedItem && api.goLive(selectedItem.id, index, "main")}>Sala</button>
-                <button onClick={() => selectedItem && api.goLive(selectedItem.id, index, "stage")}>Scena</button>
-                <button onClick={() => selectedItem && api.goLive(selectedItem.id, index, "both")}>Ambele</button>
-              </div>
             </button>
           ))}
         </div>
