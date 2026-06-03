@@ -46,8 +46,9 @@ button:disabled {
 
 .control-shell {
   display: grid;
-  grid-template-columns: minmax(250px, 320px) minmax(320px, 0.86fr) minmax(360px, 460px);
+  grid-template-columns: minmax(250px, 320px) minmax(520px, 980px) minmax(360px, 1fr);
   min-height: 100vh;
+  width: 100vw;
 }
 
 .sidebar,
