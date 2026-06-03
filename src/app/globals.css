@@ -296,28 +296,6 @@ button:disabled {
   position: absolute;
 }
 
-.stage-preview {
-  align-items: stretch;
-  background: var(--stage);
-  gap: 12px;
-  min-height: 300px;
-  text-align: left;
-}
-
-.stage-preview > div {
-  border: 1px solid #344054;
-  border-radius: 6px;
-  padding: 10px;
-}
-
-.stage-preview > div:first-child {
-  flex: 1.15;
-}
-
-.stage-preview > div:last-child {
-  flex: 0.85;
-}
-
 .screen {
   align-items: center;
   background: #05070a;

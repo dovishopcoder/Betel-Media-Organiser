@@ -191,20 +191,18 @@ export default function ControlPage() {
               <span className="item-type">Ecran scena</span>
               <a className="muted" href="/stage-screen" target="_blank">Deschide</a>
             </div>
-            <div className="screen-preview stage-preview">
-              <div>
-                <span className="item-type">Acum</span>
-                <strong>{liveState?.currentSlide?.title || "Ecran gol"}</strong>
-                <p>{liveState?.currentSlide?.body || "Fundal repaus"}</p>
-              </div>
-              <div>
-                <span className="item-type">Urmeaza</span>
-                <p>
-                  {liveState?.nextSlide?.type === "idle"
-                    ? "Imagine de fundal"
-                    : liveState?.nextSlide?.body || "Final element"}
-                </p>
-              </div>
+            <div className={`screen-preview main-preview ${liveState?.activeOutput === "blank" ? "idle" : ""}`}>
+              {liveState?.activeOutput === "blank" || !liveState?.currentSlide ? (
+                <div
+                  className="screen-preview-background"
+                  style={{ backgroundImage: `url("${background.url}")` }}
+                />
+              ) : (
+                <>
+                  <strong>{liveState.currentSlide.title}</strong>
+                  <div>{liveState.currentSlide.body}</div>
+                </>
+              )}
             </div>
           </section>
         </div>
