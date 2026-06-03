@@ -95,11 +95,26 @@ app.prepare().then(() => {
   expressApp.post("/api/live/step", (req, res) => {
     const direction = req.body.direction === "previous" ? -1 : 1;
     const stepOutput = (output) => {
-      if (!output?.currentItem || output.activeOutput !== "program") {
+      if (!output?.currentItem) {
         return output;
       }
 
       const slides = repos.slides.forProgramItem(output.currentItem);
+      if (direction < 0 && output.activeOutput === "background") {
+        const lastIndex = Math.max(slides.length - 1, 0);
+        return {
+          ...output,
+          currentSlideIndex: lastIndex,
+          currentSlide: slides[lastIndex] || null,
+          nextSlide: getNextSlide(slides, lastIndex),
+          activeOutput: slides[lastIndex] ? "program" : "background"
+        };
+      }
+
+      if (output.activeOutput !== "program") {
+        return output;
+      }
+
       if (direction > 0 && output.currentSlideIndex >= slides.length - 1) {
         return {
           ...output,
