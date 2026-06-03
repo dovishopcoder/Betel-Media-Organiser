@@ -256,7 +256,7 @@ button:disabled {
   flex-direction: column;
   gap: 8px;
   justify-content: center;
-  min-height: 152px;
+  min-height: 220px;
   overflow: hidden;
   padding: 12px;
   position: relative;
@@ -280,11 +280,12 @@ button:disabled {
 }
 
 .main-preview {
-  min-height: 170px;
+  aspect-ratio: 16 / 9;
+  min-height: 260px;
 }
 
 .main-preview:not(.idle) div {
-  font-size: 18px;
+  font-size: clamp(18px, 2vw, 26px);
   font-weight: 700;
 }
 
@@ -299,6 +300,7 @@ button:disabled {
   align-items: stretch;
   background: var(--stage);
   gap: 12px;
+  min-height: 300px;
   text-align: left;
 }
 
@@ -306,6 +308,14 @@ button:disabled {
   border: 1px solid #344054;
   border-radius: 6px;
   padding: 10px;
+}
+
+.stage-preview > div:first-child {
+  flex: 1.15;
+}
+
+.stage-preview > div:last-child {
+  flex: 0.85;
 }
 
 .screen {
