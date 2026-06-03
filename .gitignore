@@ -6,6 +6,7 @@ dist/
 build/
 .next/
 out/
+portable/
 
 # Environment
 .env
