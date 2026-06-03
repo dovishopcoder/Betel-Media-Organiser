@@ -188,6 +188,7 @@ button:disabled {
 }
 
 .main-output-screen {
+  background: #05070a;
   position: relative;
 }
 
@@ -215,8 +216,8 @@ button:disabled {
 
 .main-background-overlay {
   background:
-    linear-gradient(rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.58)),
-    radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.34) 74%);
+    linear-gradient(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.18)),
+    radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.18) 78%);
 }
 
 .main-output-content {
@@ -227,7 +228,6 @@ button:disabled {
 .main-slide-title {
   font-size: 34px;
   margin-bottom: 34px;
-  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.65);
 }
 
 .main-slide-body {
@@ -235,7 +235,6 @@ button:disabled {
   font-weight: 700;
   line-height: 1.14;
   max-width: 1500px;
-  text-shadow: 0 3px 22px rgba(0, 0, 0, 0.82);
   white-space: pre-line;
 }
 

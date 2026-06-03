@@ -42,8 +42,9 @@ Exit kiosk mode with `Alt + F4`.
 
 ## Main Screen Background
 
-The audience screen uses `media/backgrounds/main.jpg` as its background image.
-Replace that file locally when you want a different church background. The app
-keeps the lyrics as a separate layer over the image.
+The audience screen uses `media/backgrounds/main.jpg` only when the output is
+blank/idle. During songs or other live content, the slide is shown cleanly
+without that background image. Replace `main.jpg` locally when you want a
+different idle background.
 
 Media files can be stored in `media/`. The local database is ignored by Git.
