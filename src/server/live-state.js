@@ -22,7 +22,7 @@ function createOutputState(item, slides, slideIndex) {
     currentSlideIndex: index,
     currentSlide: slides[index] || null,
     nextSlide: getNextSlide(slides, index),
-    activeOutput: slides[index] ? "program" : "blank"
+    activeOutput: slides[index] ? "program" : "background"
   };
 }
 
@@ -41,7 +41,7 @@ function createInitialLiveState(repos) {
         currentSlideIndex: 0,
         currentSlide: null,
         nextSlide: null,
-        activeOutput: "blank"
+        activeOutput: "background"
       }
     },
     timer: {

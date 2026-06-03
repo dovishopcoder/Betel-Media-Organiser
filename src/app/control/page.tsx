@@ -123,7 +123,7 @@ export default function ControlPage() {
                 onChange={(event) => handleBackgroundUpload(event.target.files?.[0] || null)}
               />
             </label>
-            <div className="muted">{backgroundStatus || "Imagine folosita cand ecranul este Blank."}</div>
+            <div className="muted">{backgroundStatus || "Imagine folosita cand ecranul este pe Fundal."}</div>
           </div>
         </div>
       </aside>
@@ -146,8 +146,8 @@ export default function ControlPage() {
           <button className="primary-btn" onClick={() => api.next()} title="Next">
             Next <ChevronRight size={18} />
           </button>
-          <button className="danger-btn" onClick={() => api.clear("both")} title="Blank">
-            <Square size={16} /> Blank ambele
+          <button className="danger-btn" onClick={() => api.clear("both")} title="Fundal">
+            <Square size={16} /> Fundal ambele
           </button>
         </div>
 
@@ -179,8 +179,8 @@ export default function ControlPage() {
               <span className="item-type">Ecran principal</span>
               <a className="muted" href="/main-screen" target="_blank">Deschide</a>
             </div>
-            <div className={`screen-preview main-preview ${mainOutput?.activeOutput === "blank" ? "idle" : ""}`}>
-              {mainOutput?.activeOutput === "blank" || !mainOutput?.currentSlide ? (
+            <div className={`screen-preview main-preview ${mainOutput?.activeOutput === "background" ? "idle" : ""}`}>
+              {mainOutput?.activeOutput === "background" || !mainOutput?.currentSlide ? (
                 <div
                   className="screen-preview-background"
                   style={{ backgroundImage: `url("${background.url}")` }}
@@ -194,7 +194,7 @@ export default function ControlPage() {
             </div>
             <div className="screen-actions">
               <button className="ghost-btn" onClick={() => selectedItem && api.goLive(selectedItem.id, 0, "main")}>Trimite selectia</button>
-              <button className="ghost-btn" onClick={() => api.clear("main")}>Blank</button>
+              <button className="ghost-btn" onClick={() => api.clear("main")}>Fundal</button>
             </div>
           </section>
 
@@ -203,8 +203,8 @@ export default function ControlPage() {
               <span className="item-type">Ecran scena</span>
               <a className="muted" href="/stage-screen" target="_blank">Deschide</a>
             </div>
-            <div className={`screen-preview main-preview ${stageOutput?.activeOutput === "blank" ? "idle" : ""}`}>
-              {stageOutput?.activeOutput === "blank" || !stageOutput?.currentSlide ? (
+            <div className={`screen-preview main-preview ${stageOutput?.activeOutput === "background" ? "idle" : ""}`}>
+              {stageOutput?.activeOutput === "background" || !stageOutput?.currentSlide ? (
                 <div
                   className="screen-preview-background"
                   style={{ backgroundImage: `url("${background.url}")` }}
@@ -218,7 +218,7 @@ export default function ControlPage() {
             </div>
             <div className="screen-actions">
               <button className="ghost-btn" onClick={() => selectedItem && api.goLive(selectedItem.id, 0, "stage")}>Trimite selectia</button>
-              <button className="ghost-btn" onClick={() => api.clear("stage")}>Blank</button>
+              <button className="ghost-btn" onClick={() => api.clear("stage")}>Fundal</button>
             </div>
           </section>
         </div>

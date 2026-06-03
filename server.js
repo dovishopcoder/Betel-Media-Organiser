@@ -69,18 +69,18 @@ app.prepare().then(() => {
 
     const slides = repos.slides.forProgramItem(item);
     const output = createOutputState(item, slides, slideIndex);
-    const blankOutput = {
+    const backgroundOutput = {
       currentItem: null,
       currentSlideIndex: 0,
       currentSlide: null,
       nextSlide: null,
-      activeOutput: "blank"
+      activeOutput: "background"
     };
     const outputs = target === "both"
       ? { main: output, stage: output }
       : target === "stage"
-        ? { main: blankOutput, stage: output }
-        : { main: output, stage: blankOutput };
+        ? { main: backgroundOutput, stage: output }
+        : { main: output, stage: backgroundOutput };
 
     liveState = {
       ...liveState,
@@ -106,19 +106,19 @@ app.prepare().then(() => {
             ...liveState.outputs.main,
             currentSlide: null,
             nextSlide: null,
-            activeOutput: "blank"
+            activeOutput: "background"
           }
         },
         currentSlide: null,
         nextSlide: null,
-        activeOutput: "blank",
+        activeOutput: "background",
         updatedAt: new Date().toISOString()
       };
       io.emit("live:update", liveState);
       return res.json(liveState);
     }
 
-    const targetIndex = liveState.activeOutput === "blank" && direction < 0
+    const targetIndex = liveState.activeOutput === "background" && direction < 0
       ? slides.length - 1
       : liveState.currentSlideIndex + direction;
     const nextIndex = Math.max(0, Math.min(targetIndex, slides.length - 1));
@@ -131,13 +131,13 @@ app.prepare().then(() => {
           currentSlideIndex: nextIndex,
           currentSlide: slides[nextIndex] || null,
           nextSlide: getNextSlide(slides, nextIndex),
-          activeOutput: slides[nextIndex] ? "program" : "blank"
+          activeOutput: slides[nextIndex] ? "program" : "background"
         }
       },
       currentSlideIndex: nextIndex,
       currentSlide: slides[nextIndex] || null,
       nextSlide: getNextSlide(slides, nextIndex),
-      activeOutput: slides[nextIndex] ? "program" : "blank",
+      activeOutput: slides[nextIndex] ? "program" : "background",
       updatedAt: new Date().toISOString()
     };
     io.emit("live:update", liveState);
@@ -153,7 +153,7 @@ app.prepare().then(() => {
         ...outputs[screen],
         currentSlide: null,
         nextSlide: null,
-        activeOutput: "blank"
+        activeOutput: "background"
       };
     }
 

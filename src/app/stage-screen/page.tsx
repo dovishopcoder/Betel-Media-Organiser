@@ -7,7 +7,7 @@ export default function StageScreenPage() {
   const { background, liveState, loading } = useLiveMedia();
   const output = liveState?.outputs?.stage || liveState;
   const slide = output?.currentSlide;
-  const blank = loading || output?.activeOutput === "blank" || !slide;
+  const blank = loading || output?.activeOutput === "background" || !slide;
 
   return (
     <main className={`screen main-output-screen ${blank ? "is-idle" : "is-live"}`}>

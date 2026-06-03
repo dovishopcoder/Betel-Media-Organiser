@@ -41,7 +41,7 @@ export type LiveState = {
   currentSlideIndex: number;
   currentSlide: Slide | null;
   nextSlide: Slide | null;
-  activeOutput: "program" | "blank";
+  activeOutput: "program" | "background";
   outputs?: {
     main: ScreenOutput;
     stage: ScreenOutput;
@@ -60,5 +60,5 @@ export type ScreenOutput = {
   currentSlideIndex: number;
   currentSlide: Slide | null;
   nextSlide: Slide | null;
-  activeOutput: "program" | "blank";
+  activeOutput: "program" | "background";
 };
