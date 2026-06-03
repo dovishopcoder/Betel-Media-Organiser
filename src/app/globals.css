@@ -57,6 +57,13 @@ button:disabled {
   padding: 16px;
 }
 
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 100vh;
+}
+
 .sidebar,
 .live-panel {
   background: var(--panel);
@@ -68,6 +75,16 @@ button:disabled {
 
 .live-panel {
   border-left: 1px solid var(--line);
+}
+
+.sidebar-main {
+  min-height: 0;
+}
+
+.sidebar-footer {
+  border-top: 1px solid var(--line);
+  margin-top: auto;
+  padding-top: 14px;
 }
 
 .top-row,
@@ -195,6 +212,10 @@ button:disabled {
   border-radius: 8px;
 }
 
+.sidebar-footer .background-preview {
+  max-height: 130px;
+}
+
 .file-picker-btn {
   align-items: center;
   display: inline-flex;
@@ -204,6 +225,86 @@ button:disabled {
 
 .file-picker-btn input {
   display: none;
+}
+
+.screen-monitor-grid {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.screen-monitor {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.screen-monitor-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.screen-preview {
+  align-items: center;
+  background: #05070a;
+  border-radius: 6px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+  min-height: 152px;
+  overflow: hidden;
+  padding: 12px;
+  position: relative;
+  text-align: center;
+}
+
+.screen-preview strong {
+  font-size: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.screen-preview div,
+.screen-preview p {
+  font-size: 13px;
+  line-height: 1.25;
+  margin: 0;
+  position: relative;
+  white-space: pre-line;
+  z-index: 1;
+}
+
+.main-preview {
+  min-height: 170px;
+}
+
+.main-preview:not(.idle) div {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.screen-preview-background {
+  background-position: center;
+  background-size: cover;
+  inset: 0;
+  position: absolute;
+}
+
+.stage-preview {
+  align-items: stretch;
+  background: var(--stage);
+  gap: 12px;
+  text-align: left;
+}
+
+.stage-preview > div {
+  border: 1px solid #344054;
+  border-radius: 6px;
+  padding: 10px;
 }
 
 .screen {

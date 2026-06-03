@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, ImageUp, Monitor, Search, Square, Tv } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageUp, Monitor, Square, Tv } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLiveMedia } from "@/hooks/useLiveMedia";
 import type { ProgramItem } from "@/shared/types";
@@ -38,9 +38,8 @@ function slidesForItem(item: ProgramItem | null) {
 }
 
 export default function ControlPage() {
-  const { songs, program, background, liveState, loading, api } = useLiveMedia();
+  const { program, background, liveState, loading, api } = useLiveMedia();
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
-  const [query, setQuery] = useState("");
   const [backgroundStatus, setBackgroundStatus] = useState("");
 
   const selectedItem = useMemo(() => {
@@ -49,7 +48,6 @@ export default function ControlPage() {
   }, [program, selectedItemId, liveState]);
 
   const selectedSlides = useMemo(() => slidesForItem(selectedItem), [selectedItem]);
-  const filteredSongs = songs.filter((song) => song.title.toLowerCase().includes(query.toLowerCase()));
 
   async function handleBackgroundUpload(file: File | null) {
     if (!file) return;
@@ -80,24 +78,45 @@ export default function ControlPage() {
   return (
     <main className="control-shell">
       <aside className="sidebar">
-        <div className="top-row">
-          <h1 className="title">Program serviciu</h1>
-          <a className="muted" href="/main-screen" target="_blank">Main</a>
-          <a className="muted" href="/stage-screen" target="_blank">Stage</a>
+        <div className="sidebar-main">
+          <div className="top-row">
+            <h1 className="title">Program serviciu</h1>
+            <a className="muted" href="/main-screen" target="_blank">Main</a>
+            <a className="muted" href="/stage-screen" target="_blank">Stage</a>
+          </div>
+          <p className="muted">{program?.title || "Fara program activ"} - {program?.service_date}</p>
+          <div className="item-list">
+            {program?.items.map((item) => (
+              <button
+                className={`program-item ${liveState?.currentItem?.id === item.id ? "live" : ""}`}
+                key={item.id}
+                onClick={() => setSelectedItemId(item.id)}
+              >
+                <div className="item-type">{itemLabels[item.type] || item.type}</div>
+                <strong>{item.title}</strong>
+                {item.song ? <div className="muted">{item.song.title}</div> : null}
+              </button>
+            ))}
+          </div>
         </div>
-        <p className="muted">{program?.title || "Fara program activ"} - {program?.service_date}</p>
-        <div className="item-list">
-          {program?.items.map((item) => (
-            <button
-              className={`program-item ${liveState?.currentItem?.id === item.id ? "live" : ""}`}
-              key={item.id}
-              onClick={() => setSelectedItemId(item.id)}
-            >
-              <div className="item-type">{itemLabels[item.type] || item.type}</div>
-              <strong>{item.title}</strong>
-              {item.song ? <div className="muted">{item.song.title}</div> : null}
-            </button>
-          ))}
+
+        <div className="sidebar-footer">
+          <h3 className="title">Fundal repaus</h3>
+          <div className="background-picker">
+            <div
+              className="background-preview"
+              style={{ backgroundImage: `url("${background.url}")` }}
+            />
+            <label className="primary-btn file-picker-btn">
+              <ImageUp size={16} /> Alege imagine
+              <input
+                accept="image/jpeg,image/png,image/webp"
+                type="file"
+                onChange={(event) => handleBackgroundUpload(event.target.files?.[0] || null)}
+              />
+            </label>
+            <div className="muted">{backgroundStatus || "Imagine folosita cand ecranul este Blank."}</div>
+          </div>
         </div>
       </aside>
 
@@ -141,14 +160,53 @@ export default function ControlPage() {
 
       <aside className="live-panel">
         <div className="top-row">
-          <h2 className="title">Live acum</h2>
+          <h2 className="title">Ecrane</h2>
           <Monitor size={20} />
         </div>
         <p className="muted">Output: {liveState?.activeOutput}</p>
-        <div className="slide-tile active">
-          <div className="item-type">{liveState?.currentSlide?.label || "blank"}</div>
-          <strong>{liveState?.currentSlide?.title || "Ecran gol"}</strong>
-          <div className="slide-body-preview">{liveState?.currentSlide?.body || ""}</div>
+
+        <div className="screen-monitor-grid">
+          <section className="screen-monitor">
+            <div className="screen-monitor-header">
+              <span className="item-type">Ecran principal</span>
+              <a className="muted" href="/main-screen" target="_blank">Deschide</a>
+            </div>
+            <div className={`screen-preview main-preview ${liveState?.activeOutput === "blank" ? "idle" : ""}`}>
+              {liveState?.activeOutput === "blank" || !liveState?.currentSlide ? (
+                <div
+                  className="screen-preview-background"
+                  style={{ backgroundImage: `url("${background.url}")` }}
+                />
+              ) : (
+                <>
+                  <strong>{liveState.currentSlide.title}</strong>
+                  <div>{liveState.currentSlide.body}</div>
+                </>
+              )}
+            </div>
+          </section>
+
+          <section className="screen-monitor">
+            <div className="screen-monitor-header">
+              <span className="item-type">Ecran scena</span>
+              <a className="muted" href="/stage-screen" target="_blank">Deschide</a>
+            </div>
+            <div className="screen-preview stage-preview">
+              <div>
+                <span className="item-type">Acum</span>
+                <strong>{liveState?.currentSlide?.title || "Ecran gol"}</strong>
+                <p>{liveState?.currentSlide?.body || "Fundal repaus"}</p>
+              </div>
+              <div>
+                <span className="item-type">Urmeaza</span>
+                <p>
+                  {liveState?.nextSlide?.type === "idle"
+                    ? "Imagine de fundal"
+                    : liveState?.nextSlide?.body || "Final element"}
+                </p>
+              </div>
+            </div>
+          </section>
         </div>
 
         <h3 className="title" style={{ marginTop: 24 }}>Urmeaza</h3>
@@ -159,43 +217,6 @@ export default function ControlPage() {
               ? "Next va afisa imaginea de fundal."
               : liveState?.nextSlide?.body || "Nu exista slide urmator."}
           </div>
-        </div>
-
-        <h3 className="title" style={{ marginTop: 24 }}>Biblioteca cantari</h3>
-        <div style={{ position: "relative" }}>
-          <Search size={16} style={{ left: 10, position: "absolute", top: 11 }} />
-          <input
-            className="search"
-            placeholder="Cauta dupa titlu"
-            style={{ paddingLeft: 34 }}
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </div>
-        <div className="item-list">
-          {filteredSongs.slice(0, 8).map((song) => (
-            <div className="song-item" key={song.id}>
-              <strong>{song.title}</strong>
-              <div className="muted">{song.displayOrder.length} slide-uri</div>
-            </div>
-          ))}
-        </div>
-
-        <h3 className="title" style={{ marginTop: 24 }}>Fundal repaus</h3>
-        <div className="background-picker">
-          <div
-            className="background-preview"
-            style={{ backgroundImage: `url("${background.url}")` }}
-          />
-          <label className="primary-btn file-picker-btn">
-            <ImageUp size={16} /> Alege imagine
-            <input
-              accept="image/jpeg,image/png,image/webp"
-              type="file"
-              onChange={(event) => handleBackgroundUpload(event.target.files?.[0] || null)}
-            />
-          </label>
-          <div className="muted">{backgroundStatus || "Imagine folosita cand ecranul este Blank."}</div>
         </div>
       </aside>
     </main>
