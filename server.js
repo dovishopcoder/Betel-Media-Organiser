@@ -1,13 +1,15 @@
 const http = require("http");
+const fs = require("fs");
 const path = require("path");
 const express = require("express");
+const multer = require("multer");
 const next = require("next");
 const { Server } = require("socket.io");
 const { ensureDatabase, getDb } = require("./src/server/db");
 const { createRepositories } = require("./src/server/repositories");
 const { createInitialLiveState, createOutputState, getNextSlide } = require("./src/server/live-state");
 const { getMainBackground, saveMainBackground } = require("./src/server/backgrounds");
-const { saveMediaFile } = require("./src/server/media-files");
+const { ensureLibraryDir, isAllowedMedia, sanitizeName, saveMediaFile } = require("./src/server/media-files");
 
 const dev = process.env.NODE_ENV !== "production";
 const port = Number(process.env.PORT || 3000);
@@ -16,6 +18,22 @@ const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
 ensureDatabase();
+ensureLibraryDir();
+
+const mediaUpload = multer({
+  storage: multer.diskStorage({
+    destination(_req, _file, cb) {
+      ensureLibraryDir();
+      cb(null, path.join(__dirname, "media", "library"));
+    },
+    filename(_req, file, cb) {
+      cb(null, `${Date.now()}-${sanitizeName(file.originalname)}`);
+    }
+  }),
+  limits: {
+    fileSize: 1024 * 1024 * 1024
+  }
+});
 
 app.prepare().then(() => {
   const expressApp = express();
@@ -80,6 +98,45 @@ app.prepare().then(() => {
       io.emit("program:update", liveState.programOrder);
       res.status(201).json({ item, media, program: liveState.programOrder });
     } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  expressApp.post("/api/media/program-item/upload", mediaUpload.single("file"), (req, res) => {
+    try {
+      const activeProgram = repos.programs.getActiveWithItems();
+      if (!activeProgram) return res.status(404).json({ error: "Nu exista program activ." });
+      if (!req.file) return res.status(400).json({ error: "Alege un fisier." });
+
+      const mediaType = req.body.mediaType;
+      if (!isAllowedMedia({ fileName: req.file.originalname, mediaType, mimeType: req.file.mimetype })) {
+        fs.unlinkSync(req.file.path);
+        return res.status(400).json({ error: "Tip de fisier neacceptat pentru acest compartiment." });
+      }
+
+      const item = repos.programs.addItem(activeProgram.id, {
+        type: mediaType,
+        title: req.body.title || req.file.originalname,
+        filePath: `/media/library/${req.file.filename}`,
+        notes: req.file.originalname
+      });
+
+      liveState.programOrder = repos.programs.getActiveWithItems();
+      io.emit("program:update", liveState.programOrder);
+      res.status(201).json({
+        item,
+        media: {
+          filePath: `/media/library/${req.file.filename}`,
+          mimeType: req.file.mimetype,
+          originalName: req.file.originalname,
+          size: req.file.size
+        },
+        program: liveState.programOrder
+      });
+    } catch (error) {
+      if (req.file?.path && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
       res.status(400).json({ error: error.message });
     }
   });

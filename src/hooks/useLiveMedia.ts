@@ -101,16 +101,20 @@ export function useLiveMedia() {
       });
     },
     createMediaProgramItem(input: {
-      dataUrl: string;
-      fileName: string;
+      file: File;
       mediaType: "audio" | "video" | "presentation";
       title: string;
       notes?: string;
     }) {
-      return fetch("/api/media/program-item", {
+      const formData = new FormData();
+      formData.append("file", input.file);
+      formData.append("mediaType", input.mediaType);
+      formData.append("title", input.title);
+      if (input.notes) formData.append("notes", input.notes);
+
+      return fetch("/api/media/program-item/upload", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input)
+        body: formData
       });
     }
   }), []);

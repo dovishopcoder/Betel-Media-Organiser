@@ -89,27 +89,21 @@ export default function ControlPage() {
     }
 
     setMediaStatus("Se adauga fisierul in program...");
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const response = await api.createMediaProgramItem({
-        dataUrl: String(reader.result),
-        fileName: mediaFile.name,
-        mediaType,
-        title: mediaTitle.trim() || mediaFile.name
-      });
+    const response = await api.createMediaProgramItem({
+      file: mediaFile,
+      mediaType,
+      title: mediaTitle.trim() || mediaFile.name
+    });
 
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: "Nu s-a putut salva fisierul." }));
-        setMediaStatus(error.error);
-        return;
-      }
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: "Nu s-a putut salva fisierul." }));
+      setMediaStatus(error.error);
+      return;
+    }
 
-      setMediaFile(null);
-      setMediaTitle("");
-      setMediaStatus("Fisierul a fost adaugat in program.");
-    };
-    reader.onerror = () => setMediaStatus("Nu s-a putut citi fisierul.");
-    reader.readAsDataURL(mediaFile);
+    setMediaFile(null);
+    setMediaTitle("");
+    setMediaStatus("Fisierul a fost adaugat in program.");
   }
 
   if (loading) {

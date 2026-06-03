@@ -40,6 +40,14 @@ function sanitizeName(name) {
     .slice(0, 120);
 }
 
+function isAllowedMedia({ fileName, mediaType, mimeType }) {
+  const extension = path.extname(fileName || "").toLowerCase();
+  const typeAllowed = allowedTypes[mediaType]?.includes(mimeType);
+  const extensionAllowed = allowedExtensions[mediaType]?.includes(extension);
+
+  return Boolean(typeAllowed || extensionAllowed);
+}
+
 function saveMediaFile({ dataUrl, fileName, mediaType }) {
   const match = /^data:([^;]+);base64,(.+)$/.exec(dataUrl || "");
   if (!match) {
@@ -47,11 +55,7 @@ function saveMediaFile({ dataUrl, fileName, mediaType }) {
   }
 
   const mimeType = match[1];
-  const extension = path.extname(fileName || "").toLowerCase();
-  const typeAllowed = allowedTypes[mediaType]?.includes(mimeType);
-  const extensionAllowed = allowedExtensions[mediaType]?.includes(extension);
-
-  if (!typeAllowed && !extensionAllowed) {
+  if (!isAllowedMedia({ fileName, mediaType, mimeType })) {
     throw new Error("Tip de fisier neacceptat pentru acest compartiment.");
   }
 
@@ -76,5 +80,8 @@ function saveMediaFile({ dataUrl, fileName, mediaType }) {
 }
 
 module.exports = {
+  ensureLibraryDir,
+  isAllowedMedia,
+  sanitizeName,
   saveMediaFile
 };
