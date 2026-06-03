@@ -18,6 +18,12 @@ npm run db:init
 npm run dev
 ```
 
+On Windows, you can also start the app and open the control panel with:
+
+```bash
+npm run start:windows
+```
+
 Open:
 
 - `http://localhost:3000/control`
@@ -50,3 +56,8 @@ Set the idle background from `/control` in the `Fundal repaus` panel. Uploaded
 images are stored locally in `media/backgrounds/` and are ignored by Git.
 
 Media files can be stored in `media/`. The local database is ignored by Git.
+
+More notes:
+
+- [Workflow and UI direction](docs/WORKFLOW_AND_UI.md)
+- [Run on another Windows computer](docs/RUN_ON_OTHER_COMPUTER.md)

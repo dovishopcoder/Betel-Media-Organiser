@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "node server.js",
     "db:init": "node scripts/init-db.js",
+    "start:windows": "powershell -ExecutionPolicy Bypass -File scripts/start-app.ps1",
     "screen:main": "powershell -ExecutionPolicy Bypass -File scripts/launch-screen.ps1 -Route main-screen -Display secondary -Kiosk",
     "screen:stage": "powershell -ExecutionPolicy Bypass -File scripts/launch-screen.ps1 -Route stage-screen -Display primary"
   },
