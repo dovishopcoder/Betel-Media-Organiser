@@ -6,8 +6,6 @@ import { useLiveMedia } from "@/hooks/useLiveMedia";
 import { blockTemplates, itemLabels, serviceTemplates } from "@/shared/catalog";
 import type { ProgramItem, Slide } from "@/shared/types";
 
-const SHOW_CONTROL_SIDEBAR = false;
-
 function slidesForItem(item: ProgramItem | null): Slide[] {
   if (!item) return [];
   if (item.type === "song" && item.song) {
@@ -284,140 +282,18 @@ export default function ControlPage() {
   }
 
   return (
-    <main className={`control-shell ${SHOW_CONTROL_SIDEBAR ? "" : "without-sidebar"}`}>
-      {SHOW_CONTROL_SIDEBAR ? (
-      <aside className="sidebar">
-        <div className="sidebar-main">
-          <div className="top-row">
-            <h1 className="title">Program serviciu</h1>
-            <a className="muted" href="/settings">Setari</a>
-          </div>
-          <section className="service-builder">
-            <div className="workflow-heading">
-              <span>1</span>
-              <div>
-                <strong>Alege serviciul</strong>
-                <div className="muted">Alege template-ul pentru programul curent.</div>
-              </div>
-            </div>
-            <div className="service-type-list">
-              {serviceTemplates.map((service) => (
-                <button
-                  className={selectedServiceType === service.type ? "active" : ""}
-                  key={service.type}
-                  onClick={() => setSelectedServiceType(service.type)}
-                >
-                  <span>{service.title}</span>
-                  <small>template</small>
-                </button>
-              ))}
-            </div>
-            <button className="primary-btn service-new-btn" onClick={() => handleCreateService(selectedService.type, selectedService.title)}>
-              Creeaza program curent
-            </button>
-            <div className="muted">
-              {serviceStatus || `${program?.title || "Fara program activ"} - ${program?.service_date || ""}`}
-            </div>
-          </section>
-
-          <section className="block-builder">
-            <div className="item-type">Builder puncte</div>
-            <div className="block-template-grid">
-              {blockTemplates.map((template) => (
-                <button key={template.type} onClick={() => handleAddBlock(template)}>
-                  {itemLabels[template.type] || template.title}
-                </button>
-              ))}
-            </div>
-            <div className="muted">{builderStatus || "Adauga puncte in ordinea serviciului."}</div>
-          </section>
-
-          <div className="item-list">
-            {program?.items.map((item) => (
-              <div
-                className={`program-item ${liveState?.currentItem?.id === item.id ? "live" : ""} ${draggedItemId === item.id ? "dragging" : ""} ${dropTargetId === item.id ? "drop-target" : ""}`}
-                draggable
-                key={item.id}
-                onDragEnd={() => {
-                  setDraggedItemId(null);
-                  setDropTargetId(null);
-                }}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                  if (draggedItemId !== null && draggedItemId !== item.id) {
-                    setDropTargetId(item.id);
-                  }
-                }}
-                onDragStart={(event) => {
-                  event.dataTransfer.effectAllowed = "move";
-                  event.dataTransfer.setData("text/plain", String(item.id));
-                  setDraggedItemId(item.id);
-                }}
-                onDrop={(event) => {
-                  event.preventDefault();
-                  handleProgramItemDrop(item.id);
-                }}
-              >
-                <div className="drag-handle" aria-hidden="true">Drag</div>
-                <button className="program-select" onClick={() => setSelectedItemId(item.id)}>
-                  <div className="item-type">{itemLabels[item.type] || item.type}</div>
-                  <strong>{item.title}</strong>
-                  {item.song ? <div className="muted">{item.song.title}</div> : null}
-                </button>
-                {item.type === "song" ? (
-                  <div className="program-asset-actions">
-                    <label className={`asset-pill ${item.filePath ? "ready" : ""}`}>
-                      Cuvinte
-                      <input
-                        accept=".ppt,.pptx,.pps,.ppsx,.pdf"
-                        type="file"
-                        onChange={(event) => handleProgramItemFileUpload(item, "visual", event.target.files?.[0] || null)}
-                      />
-                    </label>
-                    <label className={`asset-pill ${item.audioFilePath ? "ready" : ""}`}>
-                      Fonograma
-                      <input
-                        accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac"
-                        type="file"
-                        onChange={(event) => handleProgramItemFileUpload(item, "audio", event.target.files?.[0] || null)}
-                      />
-                    </label>
-                    <div className="program-asset-status">
-                      {itemFileStatus[item.id]
-                        || `${item.filePath ? "Cuvinte gata" : "Cuvinte din biblioteca"} / ${item.audioFilePath ? "fonograma gata" : "fara fonograma"}`}
-                    </div>
-                  </div>
-                ) : null}
-                <div className="program-send-actions">
-                  <button onClick={() => api.goLive(item.id, 0, "main")}>Sala</button>
-                  <button onClick={() => api.goLive(item.id, 0, "stage")}>Scena</button>
-                  <button onClick={() => api.goLive(item.id, 0, "both")}>Ambele</button>
-                </div>
-              </div>
-            ))}
-          </div>
+    <main className="control-shell">
+      <aside className="sidebar control-placeholder-sidebar">
+        <div className="top-row">
+          <h1 className="title">Program</h1>
+          <a className="muted" href="/settings">Setari</a>
         </div>
-
-        <div className="sidebar-footer">
-          <h3 className="title">Fundal repaus</h3>
-          <div className="background-picker">
-            <div
-              className="background-preview"
-              style={{ backgroundImage: `url("${background.url}")` }}
-            />
-            <label className="primary-btn file-picker-btn">
-              <ImageUp size={16} /> Alege imagine
-              <input
-                accept="image/jpeg,image/png,image/webp"
-                type="file"
-                onChange={(event) => handleBackgroundUpload(event.target.files?.[0] || null)}
-              />
-            </label>
-            <div className="muted">{backgroundStatus || "Imagine folosita cand ecranul este pe Fundal."}</div>
-          </div>
+        <div className="sidebar-empty-state">
+          <div className="item-type">Coloana stanga</div>
+          <strong>Pregatita pentru constructie</strong>
+          <div className="muted">Aici vom construi programul serviciului, pas cu pas.</div>
         </div>
       </aside>
-      ) : null}
 
       <section className="workspace">
         <div className="top-row">

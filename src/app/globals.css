@@ -78,6 +78,18 @@ button:disabled {
   border-right: 1px solid var(--line);
 }
 
+.control-placeholder-sidebar {
+  gap: 18px;
+}
+
+.sidebar-empty-state {
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+}
+
 .live-panel {
   border-left: 1px solid var(--line);
 }
