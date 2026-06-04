@@ -69,10 +69,7 @@ export default function MainScreenPage() {
           {slide.type === "video" && slide.filePath ? (
             <video ref={videoRef} className="media-output-video" src={slide.filePath} autoPlay playsInline />
           ) : slide.type === "presentation" && slide.filePath ? (
-            <>
-              <div className="main-slide-title">Prezentare atasata</div>
-              <div className="main-slide-body">{slide.title}</div>
-            </>
+            <img className="media-output-presentation" src={slide.filePath} alt={slide.body || slide.title} />
           ) : (
             <>
               <div className="main-slide-title">{slide.title}</div>

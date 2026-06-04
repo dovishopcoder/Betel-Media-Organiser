@@ -1,4 +1,4 @@
-const { extractPptxSlides } = require("./presentation-slides");
+const { extractPresentationSlides } = require("./presentation-slides");
 
 function parseJson(value, fallback) {
   try {
@@ -56,7 +56,7 @@ function createSlidesForItem(item) {
   }
 
   if (item.type === "presentation") {
-    const presentationSlides = extractPptxSlides(item);
+    const presentationSlides = extractPresentationSlides(item);
     if (presentationSlides.length > 0) {
       return presentationSlides;
     }

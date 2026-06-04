@@ -16,23 +16,27 @@ const itemLabels: Record<string, string> = {
   special: "Moment special"
 };
 
-function slidesForItem(item: ProgramItem | null) {
+function slidesForItem(item: ProgramItem | null): Slide[] {
   if (!item) return [];
   if (item.type === "song" && item.song) {
     return item.song.displayOrder.map((key, index) => ({
       id: `${item.id}-${key}-${index}`,
+      type: "lyric",
       title: item.song?.title || item.title,
       label: key,
       body: item.song?.sections[key] || "",
+      filePath: null,
       sortOrder: index
     }));
   }
 
   return [{
     id: `${item.id}-single`,
+    type: item.type,
     title: item.title,
     label: item.type,
     body: item.notes || item.title,
+    filePath: item.filePath || null,
     sortOrder: 0
   }];
 }
@@ -241,9 +245,12 @@ export default function ControlPage() {
               key={slide.id}
               onClick={() => selectedItem && api.goLive(selectedItem.id, index, "both")}
             >
+              {slide.type === "presentation" && slide.filePath ? (
+                <img className="slide-image-preview" src={slide.filePath} alt={slide.body || slide.title} />
+              ) : null}
               <div className="item-type">{slide.label}</div>
               <strong>{slide.title}</strong>
-              <div className="slide-body-preview">{slide.body}</div>
+              {slide.type === "presentation" && slide.filePath ? null : <div className="slide-body-preview">{slide.body}</div>}
             </button>
           ))}
         </div>
@@ -340,10 +347,14 @@ export default function ControlPage() {
                   style={{ backgroundImage: `url("${background.url}")` }}
                 />
               ) : (
-                <>
-                  <strong>{mainOutput.currentSlide.title}</strong>
-                  <div>{mainOutput.currentSlide.body}</div>
-                </>
+                mainOutput.currentSlide.type === "presentation" && mainOutput.currentSlide.filePath ? (
+                  <img className="screen-preview-image" src={mainOutput.currentSlide.filePath} alt={mainOutput.currentSlide.body || mainOutput.currentSlide.title} />
+                ) : (
+                  <>
+                    <strong>{mainOutput.currentSlide.title}</strong>
+                    <div>{mainOutput.currentSlide.body}</div>
+                  </>
+                )
               )}
             </div>
             <div className="screen-actions">
@@ -364,10 +375,14 @@ export default function ControlPage() {
                   style={{ backgroundImage: `url("${background.url}")` }}
                 />
               ) : (
-                <>
-                  <strong>{stageOutput.currentSlide.title}</strong>
-                  <div>{stageOutput.currentSlide.body}</div>
-                </>
+                stageOutput.currentSlide.type === "presentation" && stageOutput.currentSlide.filePath ? (
+                  <img className="screen-preview-image" src={stageOutput.currentSlide.filePath} alt={stageOutput.currentSlide.body || stageOutput.currentSlide.title} />
+                ) : (
+                  <>
+                    <strong>{stageOutput.currentSlide.title}</strong>
+                    <div>{stageOutput.currentSlide.body}</div>
+                  </>
+                )
               )}
             </div>
             <div className="screen-actions">
