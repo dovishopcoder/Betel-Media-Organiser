@@ -335,48 +335,50 @@ export default function ControlPage() {
           ))}
         </div>
 
-        <section className="media-picker-panel">
-          <div className="top-row">
-            <div>
-              <h3 className="title">Alege fisier local</h3>
-              <div className="muted">Audio, video sau prezentare. Aplicatia pastreaza automat o copie pentru program.</div>
+        {false ? (
+          <section className="media-picker-panel">
+            <div className="top-row">
+              <div>
+                <h3 className="title">Alege fisier local</h3>
+                <div className="muted">Audio, video sau prezentare. Aplicatia pastreaza automat o copie pentru program.</div>
+              </div>
+              <FilePlus size={20} />
             </div>
-            <FilePlus size={20} />
-          </div>
-          <div className="media-picker-grid">
-            <label>
-              <span className="item-type">Tip</span>
-              <select value={mediaType} onChange={(event) => setMediaType(event.target.value as typeof mediaType)}>
-                <option value="presentation">Prezentare</option>
-                <option value="video">Video</option>
-                <option value="audio">Audio</option>
-              </select>
-            </label>
-            <label>
-              <span className="item-type">Titlu</span>
-              <input
-                placeholder="Titlu afisat in program"
-                value={mediaTitle}
-                onChange={(event) => setMediaTitle(event.target.value)}
-              />
-            </label>
-            <div className="media-file-field">
-              <span className="item-type">Fisier local</span>
-              <label className="primary-btn file-picker-btn">
-                <FilePlus size={16} /> Alege fisier
+            <div className="media-picker-grid">
+              <label>
+                <span className="item-type">Tip</span>
+                <select value={mediaType} onChange={(event) => setMediaType(event.target.value as typeof mediaType)}>
+                  <option value="presentation">Prezentare</option>
+                  <option value="video">Video</option>
+                  <option value="audio">Audio</option>
+                </select>
+              </label>
+              <label>
+                <span className="item-type">Titlu</span>
                 <input
-                  accept=".ppt,.pptx,.pdf,audio/*,video/*"
-                  type="file"
-                  onChange={(event) => handleMediaFileChange(event.target.files?.[0] || null)}
+                  placeholder="Titlu afisat in program"
+                  value={mediaTitle}
+                  onChange={(event) => setMediaTitle(event.target.value)}
                 />
               </label>
+              <div className="media-file-field">
+                <span className="item-type">Fisier local</span>
+                <label className="primary-btn file-picker-btn">
+                  <FilePlus size={16} /> Alege fisier
+                  <input
+                    accept=".ppt,.pptx,.pdf,audio/*,video/*"
+                    type="file"
+                    onChange={(event) => handleMediaFileChange(event.target.files?.[0] || null)}
+                  />
+                </label>
+              </div>
+              <button className="primary-btn" onClick={handleMediaUpload}>
+                Adauga in program
+              </button>
             </div>
-            <button className="primary-btn" onClick={handleMediaUpload}>
-              Adauga in program
-            </button>
-          </div>
-          <div className="muted">{mediaStatus || (mediaFile ? mediaFile.name : "Alege un fisier de pe calculator; aplicatia il copiaza local.")}</div>
-        </section>
+            <div className="muted">{mediaStatus || (mediaFile ? mediaFile.name : "Alege un fisier de pe calculator; aplicatia il copiaza local.")}</div>
+          </section>
+        ) : null}
       </section>
 
       <aside className="live-panel">
