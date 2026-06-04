@@ -10,6 +10,7 @@ const { createRepositories } = require("./src/server/repositories");
 const { createInitialLiveState, createOutputState, getNextSlide } = require("./src/server/live-state");
 const { getMainBackground, saveMainBackground } = require("./src/server/backgrounds");
 const { detectMediaType, ensureLibraryDir, isAllowedMedia, sanitizeName, saveMediaFile } = require("./src/server/media-files");
+const { getServiceProgramTemplates, saveServiceProgramTemplate } = require("./src/server/service-templates");
 
 const dev = process.env.NODE_ENV !== "production";
 const port = Number(process.env.PORT || 3000);
@@ -85,8 +86,18 @@ app.prepare().then(() => {
       activeProgram: repos.programs.getActiveWithItems(),
       screens: repos.screens.list(),
       background: getMainBackground(),
+      serviceProgramTemplates: getServiceProgramTemplates(),
       liveState
     });
+  });
+
+  expressApp.put("/api/service-templates/:serviceType", (req, res) => {
+    try {
+      const templates = saveServiceProgramTemplate(req.params.serviceType, req.body?.items || []);
+      res.json({ serviceProgramTemplates: templates });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   });
 
   expressApp.post("/api/backgrounds/main", (req, res) => {

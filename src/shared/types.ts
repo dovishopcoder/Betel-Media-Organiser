@@ -39,6 +39,12 @@ export type Program = {
   items: ProgramItem[];
 };
 
+export type ServiceTemplateItem = {
+  type: string;
+  title: string;
+  notes?: string;
+};
+
 export type LiveState = {
   currentItem: ProgramItem | null;
   currentSlideIndex: number;

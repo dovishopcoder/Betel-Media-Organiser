@@ -30,12 +30,3 @@ export const blockTemplates = [
   { type: "pause", title: "Pauza", notes: "Fundal / repaus" },
   { type: "special", title: "Moment special", notes: "Moment special" }
 ];
-
-export const serviceTemplateBlocks: Record<string, string[]> = {
-  vineri_seara: ["Cantare deschidere", "Rugaciune", "Mesaj", "Cantare incheiere"],
-  scoala_sabat: ["Cantare deschidere", "Rugaciune", "Studiu biblic", "Anunturi"],
-  serviciul_divin: ["Cantare deschidere", "Rugaciune", "Anunturi", "Cantare speciala", "Predica", "Cantare finala"],
-  serviciul_seara: ["Cantare deschidere", "Rugaciune", "Mesaj", "Moment special", "Cantare finala"],
-  sfanta_cina: ["Cantare deschidere", "Rugaciune", "Meditatie", "Sfanta cina", "Cantare finala"],
-  custom: []
-};

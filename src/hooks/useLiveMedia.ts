@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import type { LiveState, Program, Slide, Song } from "@/shared/types";
+import type { LiveState, Program, ServiceTemplateItem, Slide, Song } from "@/shared/types";
 
 type Bootstrap = {
   songs: Song[];
@@ -12,6 +12,7 @@ type Bootstrap = {
     url: string;
     exists: boolean;
   };
+  serviceProgramTemplates: Record<string, ServiceTemplateItem[]>;
   liveState: LiveState;
 };
 
@@ -31,6 +32,7 @@ export function useLiveMedia() {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [program, setProgram] = useState<Program | null>(null);
   const [background, setBackground] = useState({ url: "/media/backgrounds/main.jpg", exists: false });
+  const [serviceProgramTemplates, setServiceProgramTemplates] = useState<Record<string, ServiceTemplateItem[]>>({});
   const [liveState, setLiveState] = useState<LiveState | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -43,6 +45,7 @@ export function useLiveMedia() {
         setPrograms(data.programs);
         setProgram(data.activeProgram);
         setBackground(data.background);
+        setServiceProgramTemplates(data.serviceProgramTemplates || {});
         setLiveState(data.liveState);
         setLoading(false);
       });
@@ -142,6 +145,13 @@ export function useLiveMedia() {
         body: JSON.stringify(input)
       });
     },
+    updateServiceTemplate(serviceType: string, items: ServiceTemplateItem[]) {
+      return fetch(`/api/service-templates/${serviceType}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items })
+      });
+    },
     activateProgram(programId: number) {
       return fetch(`/api/programs/${programId}/activate`, {
         method: "POST"
@@ -187,5 +197,5 @@ export function useLiveMedia() {
     }
   }), []);
 
-  return { songs, programs, program, background, liveState, loading, refresh: loadBootstrap, api };
+  return { songs, programs, program, background, serviceProgramTemplates, liveState, loading, refresh: loadBootstrap, api };
 }
