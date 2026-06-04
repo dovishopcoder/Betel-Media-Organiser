@@ -96,6 +96,15 @@ export function useLiveMedia() {
       const payload = await response.json();
       return payload.slides || [];
     },
+    attachProgramItemAudio(itemId: number, file: File) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      return fetch(`/api/program-items/${itemId}/audio`, {
+        method: "POST",
+        body: formData
+      });
+    },
     videoControl(target: "main" | "stage" | "both", action: "play" | "pause" | "restart") {
       return fetch("/api/live/video-control", {
         method: "POST",

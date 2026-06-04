@@ -147,6 +147,14 @@ function createRepositories(db) {
         maxOrder + 1
       );
       return programs.getItem(result.lastInsertRowid);
+    },
+    attachFile(itemId, input) {
+      db.prepare(`
+        UPDATE program_items
+        SET file_path = ?
+        WHERE id = ?
+      `).run(input.filePath || null, itemId);
+      return programs.getItem(itemId);
     }
   };
 

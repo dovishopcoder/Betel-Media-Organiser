@@ -88,6 +88,47 @@ app.prepare().then(() => {
     res.json({ slides: repos.slides.forProgramItem(item) });
   });
 
+  expressApp.post("/api/program-items/:itemId/audio", mediaUpload.single("file"), (req, res) => {
+    try {
+      const item = repos.programs.getItem(Number(req.params.itemId));
+      if (!item) return res.status(404).json({ error: "Program item not found" });
+      if (item.type !== "song") return res.status(400).json({ error: "Fonograma poate fi atasata doar la o cantare." });
+      if (!req.file) return res.status(400).json({ error: "Alege un fisier audio." });
+
+      if (!isAllowedMedia({ fileName: req.file.originalname, mediaType: "audio", mimeType: req.file.mimetype })) {
+        fs.unlinkSync(req.file.path);
+        return res.status(400).json({ error: "Alege un fisier audio acceptat." });
+      }
+
+      const updatedItem = repos.programs.attachFile(item.id, {
+        filePath: `/media/library/${req.file.filename}`
+      });
+      const refreshOutput = (output) => output?.currentItem?.id === updatedItem.id
+        ? { ...output, currentItem: updatedItem }
+        : output;
+      const outputs = {
+        main: refreshOutput(liveState.outputs.main),
+        stage: refreshOutput(liveState.outputs.stage)
+      };
+
+      liveState = {
+        ...liveState,
+        outputs,
+        ...(outputs.main || {}),
+        programOrder: repos.programs.getActiveWithItems(),
+        updatedAt: new Date().toISOString()
+      };
+      io.emit("program:update", liveState.programOrder);
+      io.emit("live:update", liveState);
+      res.json({ item: updatedItem, program: liveState.programOrder });
+    } catch (error) {
+      if (req.file?.path && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   expressApp.post("/api/media/program-item", (req, res) => {
     try {
       const activeProgram = repos.programs.getActiveWithItems();
