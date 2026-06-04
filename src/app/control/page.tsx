@@ -1,9 +1,9 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, FilePlus, ImageUp, Monitor, Pause, Play, RotateCcw, Square, Tv } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLiveMedia } from "@/hooks/useLiveMedia";
-import type { ProgramItem } from "@/shared/types";
+import type { ProgramItem, Slide } from "@/shared/types";
 
 const itemLabels: Record<string, string> = {
   song: "Cantare",
@@ -59,13 +59,15 @@ export default function ControlPage() {
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaTitle, setMediaTitle] = useState("");
   const [mediaStatus, setMediaStatus] = useState("");
+  const [serverSlides, setServerSlides] = useState<Slide[] | null>(null);
 
   const selectedItem = useMemo(() => {
     const items = program?.items || [];
     return items.find((item) => item.id === selectedItemId) || liveState?.currentItem || items[0] || null;
   }, [program, selectedItemId, liveState]);
 
-  const selectedSlides = useMemo(() => slidesForItem(selectedItem), [selectedItem]);
+  const fallbackSlides = useMemo(() => slidesForItem(selectedItem), [selectedItem]);
+  const selectedSlides = serverSlides || fallbackSlides;
   const mainOutput = liveState?.outputs?.main || liveState;
   const stageOutput = liveState?.outputs?.stage || liveState;
   const activeAudio = mainOutput?.currentSlide?.type === "audio" && mainOutput.currentSlide.filePath
@@ -81,6 +83,21 @@ export default function ControlPage() {
       ? stageOutput.currentSlide
       : null;
   const activeVideoTarget = mainVideoLive && stageVideoLive ? "both" : mainVideoLive ? "main" : "stage";
+
+  useEffect(() => {
+    let mounted = true;
+    setServerSlides(null);
+
+    if (!selectedItem) return;
+
+    api.getProgramItemSlides(selectedItem.id).then((slides) => {
+      if (mounted) setServerSlides(slides.length ? slides : null);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [api, selectedItem]);
 
   async function handleBackgroundUpload(file: File | null) {
     if (!file) return;

@@ -13,6 +13,7 @@
     "screen:stage": "powershell -ExecutionPolicy Bypass -File scripts/launch-screen.ps1 -Route stage-screen -Display primary -Kiosk"
   },
   "dependencies": {
+    "adm-zip": "^0.5.17",
     "better-sqlite3": "^12.5.0",
     "express": "^5.2.1",
     "lucide-react": "^0.561.0",

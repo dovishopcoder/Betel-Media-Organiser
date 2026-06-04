@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import type { LiveState, Program, Song } from "@/shared/types";
+import type { LiveState, Program, Slide, Song } from "@/shared/types";
 
 type Bootstrap = {
   songs: Song[];
@@ -89,6 +89,12 @@ export function useLiveMedia() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ target })
       });
+    },
+    async getProgramItemSlides(itemId: number): Promise<Slide[]> {
+      const response = await fetch(`/api/program-items/${itemId}/slides`);
+      if (!response.ok) return [];
+      const payload = await response.json();
+      return payload.slides || [];
     },
     videoControl(target: "main" | "stage" | "both", action: "play" | "pause" | "restart") {
       return fetch("/api/live/video-control", {

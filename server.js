@@ -81,6 +81,13 @@ app.prepare().then(() => {
     res.status(201).json(item);
   });
 
+  expressApp.get("/api/program-items/:itemId/slides", (req, res) => {
+    const item = repos.programs.getItem(Number(req.params.itemId));
+    if (!item) return res.status(404).json({ error: "Program item not found" });
+
+    res.json({ slides: repos.slides.forProgramItem(item) });
+  });
+
   expressApp.post("/api/media/program-item", (req, res) => {
     try {
       const activeProgram = repos.programs.getActiveWithItems();

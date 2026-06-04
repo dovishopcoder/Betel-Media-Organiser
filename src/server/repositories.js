@@ -1,3 +1,5 @@
+const { extractPptxSlides } = require("./presentation-slides");
+
 function parseJson(value, fallback) {
   try {
     return JSON.parse(value);
@@ -51,6 +53,13 @@ function createSlidesForItem(item) {
       notes: item.notes || "",
       sortOrder: index
     }));
+  }
+
+  if (item.type === "presentation") {
+    const presentationSlides = extractPptxSlides(item);
+    if (presentationSlides.length > 0) {
+      return presentationSlides;
+    }
   }
 
   return [
