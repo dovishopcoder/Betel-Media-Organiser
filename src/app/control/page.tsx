@@ -339,36 +339,53 @@ export default function ControlPage() {
             <a className="muted" href="/stage-screen" target="_blank">Stage</a>
           </div>
           <section className="service-builder">
-            <div className="item-type">Tip serviciu</div>
-            <div className="service-template-grid">
-              {serviceTemplates.map((service) => (
-                <button
-                  className={selectedServiceType === service.type ? "active" : ""}
-                  key={service.type}
-                  onClick={() => setSelectedServiceType(service.type)}
-                >
-                  {service.title}
-                </button>
-              ))}
+            <div className="workflow-heading">
+              <span>1</span>
+              <div>
+                <strong>Alege serviciul</strong>
+                <div className="muted">Tipul serviciului grupeaza programele dupa data.</div>
+              </div>
             </div>
-            <div className="service-mode-grid">
-              <button className="primary-btn" onClick={() => handleCreateService(selectedService.type, selectedService.title)}>
-                Nou
-              </button>
-              <label>
-                <span className="item-type">Salvate</span>
-                <select
-                  value={program?.serviceType === selectedServiceType ? program.id : ""}
-                  onChange={(event) => event.target.value && handleActivateProgram(Number(event.target.value))}
-                >
-                  <option value="">Alege dupa data</option>
-                  {savedServicesForType.map((service) => (
-                    <option key={service.id} value={service.id}>
-                      {service.service_date} - {service.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
+            <div className="service-type-list">
+              {serviceTemplates.map((service) => {
+                const savedCount = programs.filter((programItem) => (programItem.serviceType || "custom") === service.type).length;
+                return (
+                  <button
+                    className={selectedServiceType === service.type ? "active" : ""}
+                    key={service.type}
+                    onClick={() => setSelectedServiceType(service.type)}
+                  >
+                    <span>{service.title}</span>
+                    <small>{savedCount}</small>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="workflow-heading">
+              <span>2</span>
+              <div>
+                <strong>Nou sau salvat</strong>
+                <div className="muted">Nou foloseste template-ul; salvat incarca programul din data aleasa.</div>
+              </div>
+            </div>
+            <button className="primary-btn service-new-btn" onClick={() => handleCreateService(selectedService.type, selectedService.title)}>
+              Nou din template: {selectedService.title}
+            </button>
+            <div className="saved-service-list">
+              {savedServicesForType.length > 0 ? (
+                savedServicesForType.map((service) => (
+                  <button
+                    className={program?.id === service.id ? "active" : ""}
+                    key={service.id}
+                    onClick={() => handleActivateProgram(service.id)}
+                  >
+                    <span>{service.service_date}</span>
+                    <strong>{service.title}</strong>
+                  </button>
+                ))
+              ) : (
+                <div className="empty-state">Nu exista servicii salvate pentru acest tip.</div>
+              )}
             </div>
             <div className="muted">
               {serviceStatus || `${program?.title || "Fara program activ"} - ${program?.service_date || ""}`}
