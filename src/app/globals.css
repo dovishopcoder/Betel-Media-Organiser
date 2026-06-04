@@ -163,6 +163,10 @@ button:disabled {
   gap: 6px;
 }
 
+.service-type-list.large {
+  gap: 8px;
+}
+
 .service-type-list button {
   align-items: center;
   border-radius: 6px;
@@ -440,6 +444,174 @@ button:disabled {
   min-height: 38px;
   padding: 0 10px;
   width: 100%;
+}
+
+.settings-shell {
+  background: var(--bg);
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.settings-nav {
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 100vh;
+  padding: 18px;
+}
+
+.brand-row {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.settings-control-link {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.settings-menu {
+  display: grid;
+  gap: 6px;
+}
+
+.settings-menu a,
+.screen-link-list a {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  min-height: 36px;
+  padding: 9px 10px;
+  text-decoration: none;
+}
+
+.settings-menu a:hover,
+.screen-link-list a:hover {
+  border-color: var(--accent);
+}
+
+.settings-content {
+  display: grid;
+  gap: 20px;
+  padding: 22px;
+}
+
+.settings-section {
+  display: grid;
+  gap: 12px;
+}
+
+.settings-section-header {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.settings-section-header p {
+  margin: 5px 0 0;
+}
+
+.settings-two-column {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(260px, 0.85fr) minmax(320px, 1fr);
+}
+
+.settings-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.template-preview-list,
+.saved-program-grid,
+.screen-link-list {
+  display: grid;
+  gap: 8px;
+}
+
+.template-preview-list div {
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  display: flex;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 9px;
+}
+
+.template-preview-list span {
+  align-items: center;
+  background: var(--bg);
+  border-radius: 999px;
+  color: var(--muted);
+  display: inline-flex;
+  flex: 0 0 24px;
+  font-size: 12px;
+  height: 24px;
+  justify-content: center;
+}
+
+.saved-program-grid {
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+
+.saved-program-grid button {
+  border-radius: 6px;
+  display: grid;
+  gap: 3px;
+  min-height: 70px;
+  padding: 8px;
+  text-align: left;
+}
+
+.saved-program-grid button.active {
+  border-color: var(--live);
+  box-shadow: inset 4px 0 0 var(--live);
+}
+
+.saved-program-grid span,
+.saved-program-grid small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.settings-media-grid {
+  grid-template-columns: 150px minmax(220px, 1fr) auto auto;
+  margin: 0;
+}
+
+.settings-block-grid {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+.block-reference {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  display: grid;
+  gap: 3px;
+  min-height: 66px;
+  padding: 9px;
+}
+
+.block-reference span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.settings-background-preview {
+  max-height: 250px;
 }
 
 .screen-actions {
@@ -727,9 +899,23 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
+  .settings-shell {
+    grid-template-columns: 1fr;
+  }
+
   .sidebar,
   .live-panel {
     border: 0;
+  }
+
+  .settings-nav {
+    border-right: 0;
+    min-height: auto;
+  }
+
+  .settings-two-column,
+  .settings-media-grid {
+    grid-template-columns: 1fr;
   }
 
   .stage-screen {

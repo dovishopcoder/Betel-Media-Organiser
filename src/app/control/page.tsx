@@ -3,38 +3,8 @@
 import { ChevronLeft, ChevronRight, FilePlus, ImageUp, Monitor, Pause, Play, RotateCcw, Square, Tv } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLiveMedia } from "@/hooks/useLiveMedia";
+import { blockTemplates, itemLabels, serviceTemplates } from "@/shared/catalog";
 import type { ProgramItem, Slide } from "@/shared/types";
-
-const itemLabels: Record<string, string> = {
-  song: "Cantare",
-  prayer: "Rugaciune",
-  sermon: "Predica",
-  presentation: "Prezentare",
-  announcements: "Anunturi",
-  video: "Video",
-  pause: "Pauza",
-  special: "Moment special"
-};
-
-const serviceTemplates = [
-  { type: "vineri_seara", title: "Vineri seara" },
-  { type: "scoala_sabat", title: "Scoala de sabat" },
-  { type: "serviciul_divin", title: "Serviciul Divin" },
-  { type: "serviciul_seara", title: "Serviciul seara" },
-  { type: "sfanta_cina", title: "Sfanta cina" },
-  { type: "custom", title: "Serviciu custom" }
-];
-
-const blockTemplates = [
-  { type: "song", title: "Cantare", notes: "Cuvinte + fonograma" },
-  { type: "prayer", title: "Rugaciune", notes: "Moment de rugaciune" },
-  { type: "sermon", title: "Predica", notes: "Mesaj / timer" },
-  { type: "presentation", title: "Prezentare", notes: "PowerPoint / PDF" },
-  { type: "announcements", title: "Anunturi", notes: "Anunturi pentru biserica" },
-  { type: "video", title: "Video", notes: "Fisier video" },
-  { type: "pause", title: "Pauza", notes: "Fundal / repaus" },
-  { type: "special", title: "Moment special", notes: "Moment special" }
-];
 
 function slidesForItem(item: ProgramItem | null): Slide[] {
   if (!item) return [];
@@ -335,8 +305,7 @@ export default function ControlPage() {
         <div className="sidebar-main">
           <div className="top-row">
             <h1 className="title">Program serviciu</h1>
-            <a className="muted" href="/main-screen" target="_blank">Main</a>
-            <a className="muted" href="/stage-screen" target="_blank">Stage</a>
+            <a className="muted" href="/settings">Setari</a>
           </div>
           <section className="service-builder">
             <div className="workflow-heading">
