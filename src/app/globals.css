@@ -177,8 +177,7 @@ button:disabled {
   text-align: left;
 }
 
-.service-type-list button.active,
-.saved-service-list button.active {
+.service-type-list button.active {
   border-color: var(--accent);
   box-shadow: inset 3px 0 0 var(--accent);
 }
@@ -192,24 +191,6 @@ button:disabled {
   justify-content: center;
 }
 
-.saved-service-list {
-  display: grid;
-  gap: 6px;
-  max-height: 138px;
-  overflow: auto;
-  padding-right: 2px;
-}
-
-.saved-service-list button {
-  border-radius: 6px;
-  display: grid;
-  gap: 2px;
-  min-height: 42px;
-  padding: 6px 8px;
-  text-align: left;
-}
-
-.saved-service-list span,
 .empty-state {
   color: var(--muted);
   font-size: 12px;
@@ -535,7 +516,6 @@ button:disabled {
 }
 
 .template-preview-list,
-.saved-program-grid,
 .screen-link-list {
   display: grid;
   gap: 8px;
@@ -561,30 +541,6 @@ button:disabled {
   font-size: 12px;
   height: 24px;
   justify-content: center;
-}
-
-.saved-program-grid {
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-}
-
-.saved-program-grid button {
-  border-radius: 6px;
-  display: grid;
-  gap: 3px;
-  min-height: 70px;
-  padding: 8px;
-  text-align: left;
-}
-
-.saved-program-grid button.active {
-  border-color: var(--live);
-  box-shadow: inset 4px 0 0 var(--live);
-}
-
-.saved-program-grid span,
-.saved-program-grid small {
-  color: var(--muted);
-  font-size: 12px;
 }
 
 .settings-media-grid {

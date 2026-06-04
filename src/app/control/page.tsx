@@ -46,7 +46,7 @@ function detectMediaTypeFromFile(file: File): "audio" | "video" | "presentation"
 }
 
 export default function ControlPage() {
-  const { programs, program, background, liveState, loading, refresh, api } = useLiveMedia();
+  const { program, background, liveState, loading, refresh, api } = useLiveMedia();
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [selectedServiceType, setSelectedServiceType] = useState("serviciul_divin");
   const [backgroundStatus, setBackgroundStatus] = useState("");
@@ -66,10 +66,6 @@ export default function ControlPage() {
     return items.find((item) => item.id === selectedItemId) || liveState?.currentItem || items[0] || null;
   }, [program, selectedItemId, liveState]);
   const selectedService = serviceTemplates.find((service) => service.type === selectedServiceType) || serviceTemplates[0];
-  const savedServicesForType = useMemo(() => (
-    programs.filter((service) => (service.serviceType || "custom") === selectedServiceType)
-  ), [programs, selectedServiceType]);
-
   const fallbackSlides = useMemo(() => slidesForItem(selectedItem), [selectedItem]);
   const selectedSlides = serverSlides || fallbackSlides;
   const mainOutput = liveState?.outputs?.main || liveState;
@@ -223,20 +219,6 @@ export default function ControlPage() {
     setServiceStatus(`${title} a fost creat si activat.`);
   }
 
-  async function handleActivateProgram(programId: number) {
-    setServiceStatus("Se schimba serviciul activ...");
-    const response = await api.activateProgram(programId);
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: "Nu s-a putut activa serviciul." }));
-      setServiceStatus(error.error);
-      return;
-    }
-
-    setSelectedItemId(null);
-    await refresh();
-    setServiceStatus("Serviciul activ a fost schimbat.");
-  }
-
   async function handleAddBlock(template: typeof blockTemplates[number]) {
     if (!program) {
       setBuilderStatus("Creeaza mai intai un serviciu.");
@@ -312,50 +294,24 @@ export default function ControlPage() {
               <span>1</span>
               <div>
                 <strong>Alege serviciul</strong>
-                <div className="muted">Tipul serviciului grupeaza programele dupa data.</div>
+                <div className="muted">Alege template-ul pentru programul curent.</div>
               </div>
             </div>
             <div className="service-type-list">
-              {serviceTemplates.map((service) => {
-                const savedCount = programs.filter((programItem) => (programItem.serviceType || "custom") === service.type).length;
-                return (
-                  <button
-                    className={selectedServiceType === service.type ? "active" : ""}
-                    key={service.type}
-                    onClick={() => setSelectedServiceType(service.type)}
-                  >
-                    <span>{service.title}</span>
-                    <small>{savedCount}</small>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="workflow-heading">
-              <span>2</span>
-              <div>
-                <strong>Nou sau salvat</strong>
-                <div className="muted">Nou foloseste template-ul; salvat incarca programul din data aleasa.</div>
-              </div>
+              {serviceTemplates.map((service) => (
+                <button
+                  className={selectedServiceType === service.type ? "active" : ""}
+                  key={service.type}
+                  onClick={() => setSelectedServiceType(service.type)}
+                >
+                  <span>{service.title}</span>
+                  <small>template</small>
+                </button>
+              ))}
             </div>
             <button className="primary-btn service-new-btn" onClick={() => handleCreateService(selectedService.type, selectedService.title)}>
-              Nou din template: {selectedService.title}
+              Creeaza program curent
             </button>
-            <div className="saved-service-list">
-              {savedServicesForType.length > 0 ? (
-                savedServicesForType.map((service) => (
-                  <button
-                    className={program?.id === service.id ? "active" : ""}
-                    key={service.id}
-                    onClick={() => handleActivateProgram(service.id)}
-                  >
-                    <span>{service.service_date}</span>
-                    <strong>{service.title}</strong>
-                  </button>
-                ))
-              ) : (
-                <div className="empty-state">Nu exista servicii salvate pentru acest tip.</div>
-              )}
-            </div>
             <div className="muted">
               {serviceStatus || `${program?.title || "Fara program activ"} - ${program?.service_date || ""}`}
             </div>

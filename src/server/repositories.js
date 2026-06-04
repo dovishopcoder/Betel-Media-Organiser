@@ -131,6 +131,8 @@ const serviceProgramTemplates = {
 };
 
 function createRepositories(db) {
+  db.prepare("DELETE FROM programs WHERE status != 'active'").run();
+
   const songs = {
     list() {
       return db.prepare("SELECT * FROM songs ORDER BY title COLLATE NOCASE").all().map(mapSong);
@@ -158,7 +160,7 @@ function createRepositories(db) {
 
   const programs = {
     list() {
-      return db.prepare("SELECT * FROM programs ORDER BY service_date DESC, id DESC").all().map(mapProgram);
+      return db.prepare("SELECT * FROM programs WHERE status = 'active' ORDER BY id DESC LIMIT 1").all().map(mapProgram);
     },
     getActiveWithItems() {
       const program = db.prepare("SELECT * FROM programs WHERE status = 'active' ORDER BY id DESC LIMIT 1").get();
@@ -172,7 +174,7 @@ function createRepositories(db) {
       return mapProgram(db.prepare("SELECT * FROM programs WHERE id = ?").get(id));
     },
     create(input) {
-      db.prepare("UPDATE programs SET status = 'inactive' WHERE status = 'active'").run();
+      db.prepare("DELETE FROM programs").run();
       const result = db.prepare(`
         INSERT INTO programs (title, service_date, service_type, status)
         VALUES (?, ?, ?, 'active')

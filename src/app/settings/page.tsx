@@ -1,9 +1,9 @@
 "use client";
 
 import { FilePlus, ImageUp, Library, Monitor, Settings, Tv } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useLiveMedia } from "@/hooks/useLiveMedia";
-import { blockTemplates, itemLabels, serviceTemplateBlocks, serviceTemplates } from "@/shared/catalog";
+import { serviceTemplateBlocks, serviceTemplates } from "@/shared/catalog";
 
 function detectMediaTypeFromFile(file: File): "audio" | "video" | "presentation" | null {
   const extension = file.name.toLowerCase().split(".").pop() || "";
@@ -14,7 +14,7 @@ function detectMediaTypeFromFile(file: File): "audio" | "video" | "presentation"
 }
 
 export default function SettingsPage() {
-  const { programs, program, background, loading, refresh, api } = useLiveMedia();
+  const { program, background, loading, refresh, api } = useLiveMedia();
   const [selectedServiceType, setSelectedServiceType] = useState(program?.serviceType || "serviciul_divin");
   const [serviceStatus, setServiceStatus] = useState("");
   const [backgroundStatus, setBackgroundStatus] = useState("");
@@ -24,12 +24,9 @@ export default function SettingsPage() {
   const [mediaStatus, setMediaStatus] = useState("");
 
   const selectedService = serviceTemplates.find((service) => service.type === selectedServiceType) || serviceTemplates[2];
-  const savedServicesForType = useMemo(() => (
-    programs.filter((service) => (service.serviceType || "custom") === selectedServiceType)
-  ), [programs, selectedServiceType]);
 
   async function handleCreateService() {
-    setServiceStatus(`Se creeaza ${selectedService.title}...`);
+    setServiceStatus(`Se creeaza programul curent pentru ${selectedService.title}...`);
     const today = new Date().toISOString().slice(0, 10);
     const response = await api.createProgram({
       title: `${selectedService.title} - ${today}`,
@@ -44,20 +41,7 @@ export default function SettingsPage() {
     }
 
     await refresh();
-    setServiceStatus(`${selectedService.title} a fost creat si activat.`);
-  }
-
-  async function handleActivateProgram(programId: number) {
-    setServiceStatus("Se incarca serviciul salvat...");
-    const response = await api.activateProgram(programId);
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: "Nu s-a putut activa serviciul." }));
-      setServiceStatus(error.error);
-      return;
-    }
-
-    await refresh();
-    setServiceStatus("Serviciul salvat este acum activ.");
+    setServiceStatus(`${selectedService.title} este acum programul curent.`);
   }
 
   async function handleBackgroundUpload(file: File | null) {
@@ -139,7 +123,6 @@ export default function SettingsPage() {
           <a href="#servicii">Servicii</a>
           <a href="#biblioteca">Biblioteca</a>
           <a href="#ecrane">Ecrane</a>
-          <a href="#backup">Backup</a>
         </nav>
       </aside>
 
@@ -148,28 +131,25 @@ export default function SettingsPage() {
           <div className="settings-section-header">
             <div>
               <h2 className="title">Servicii si template-uri</h2>
-              <p className="muted">Alegi tipul de serviciu, creezi unul nou din template sau incarci unul salvat dupa data.</p>
+              <p className="muted">Alegi tipul de serviciu si creezi programul curent din template.</p>
             </div>
-            <button className="primary-btn" onClick={handleCreateService}>Nou din template</button>
+            <button className="primary-btn" onClick={handleCreateService}>Creeaza program curent</button>
           </div>
 
           <div className="settings-two-column">
             <div className="settings-card">
               <div className="item-type">Tip serviciu</div>
               <div className="service-type-list large">
-                {serviceTemplates.map((service) => {
-                  const savedCount = programs.filter((saved) => (saved.serviceType || "custom") === service.type).length;
-                  return (
-                    <button
-                      className={selectedServiceType === service.type ? "active" : ""}
-                      key={service.type}
-                      onClick={() => setSelectedServiceType(service.type)}
-                    >
-                      <span>{service.title}</span>
-                      <small>{savedCount} salvate</small>
-                    </button>
-                  );
-                })}
+                {serviceTemplates.map((service) => (
+                  <button
+                    className={selectedServiceType === service.type ? "active" : ""}
+                    key={service.type}
+                    onClick={() => setSelectedServiceType(service.type)}
+                  >
+                    <span>{service.title}</span>
+                    <small>template</small>
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -188,27 +168,6 @@ export default function SettingsPage() {
                 )}
               </div>
               <div className="muted">{serviceStatus || `${program?.title || "Fara serviciu activ"} este serviciul activ.`}</div>
-            </div>
-          </div>
-
-          <div className="settings-card">
-            <div className="item-type">Servicii salvate pentru {selectedService.title}</div>
-            <div className="saved-program-grid">
-              {savedServicesForType.length ? (
-                savedServicesForType.map((service) => (
-                  <button
-                    className={program?.id === service.id ? "active" : ""}
-                    key={service.id}
-                    onClick={() => handleActivateProgram(service.id)}
-                  >
-                    <span>{service.service_date}</span>
-                    <strong>{service.title}</strong>
-                    <small>{service.status === "active" ? "activ" : "salvat"}</small>
-                  </button>
-                ))
-              ) : (
-                <div className="empty-state">Nu exista inca servicii salvate pentru acest tip.</div>
-              )}
             </div>
           </div>
         </section>
@@ -243,17 +202,6 @@ export default function SettingsPage() {
             </div>
             <div className="muted">{mediaStatus || (mediaFile ? mediaFile.name : "Alege un fisier de pe calculator.")}</div>
           </div>
-          <div className="settings-card">
-            <div className="item-type">Tipuri de blocuri disponibile</div>
-            <div className="block-template-grid settings-block-grid">
-              {blockTemplates.map((block) => (
-                <div className="block-reference" key={block.type}>
-                  <strong>{itemLabels[block.type] || block.title}</strong>
-                  <span>{block.notes}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </section>
 
         <section className="settings-section" id="ecrane">
@@ -285,17 +233,6 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        <section className="settings-section" id="backup">
-          <div className="settings-section-header">
-            <div>
-              <h2 className="title">Backup si mutare pe alt calculator</h2>
-              <p className="muted">Zona pregatita pentru export/import. Urmatorul pas va fi pachet JSON + folder media.</p>
-            </div>
-          </div>
-          <div className="settings-card muted">
-            Acum datele sunt locale in SQLite si fisierele sunt in folderul media. Vom adauga butoane de export/import cand stabilim structura finala a bibliotecii.
-          </div>
-        </section>
       </section>
     </main>
   );
