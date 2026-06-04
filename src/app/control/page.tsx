@@ -6,6 +6,8 @@ import { useLiveMedia } from "@/hooks/useLiveMedia";
 import { blockTemplates, itemLabels, serviceTemplates } from "@/shared/catalog";
 import type { ProgramItem, Slide } from "@/shared/types";
 
+const SHOW_CONTROL_SIDEBAR = false;
+
 function slidesForItem(item: ProgramItem | null): Slide[] {
   if (!item) return [];
   if (item.type === "song" && item.song) {
@@ -282,7 +284,8 @@ export default function ControlPage() {
   }
 
   return (
-    <main className="control-shell">
+    <main className={`control-shell ${SHOW_CONTROL_SIDEBAR ? "" : "without-sidebar"}`}>
+      {SHOW_CONTROL_SIDEBAR ? (
       <aside className="sidebar">
         <div className="sidebar-main">
           <div className="top-row">
@@ -414,6 +417,7 @@ export default function ControlPage() {
           </div>
         </div>
       </aside>
+      ) : null}
 
       <section className="workspace">
         <div className="top-row">

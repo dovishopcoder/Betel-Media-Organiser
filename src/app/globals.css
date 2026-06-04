@@ -51,6 +51,10 @@ button:disabled {
   width: 100vw;
 }
 
+.control-shell.without-sidebar {
+  grid-template-columns: minmax(560px, 1fr) minmax(420px, 620px);
+}
+
 .sidebar,
 .workspace,
 .live-panel {
