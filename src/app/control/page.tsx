@@ -64,8 +64,7 @@ export default function ControlPage() {
   const [mediaTitle, setMediaTitle] = useState("");
   const [mediaStatus, setMediaStatus] = useState("");
   const [serverSlides, setServerSlides] = useState<Slide[] | null>(null);
-  const [phonogramFile, setPhonogramFile] = useState<File | null>(null);
-  const [phonogramStatus, setPhonogramStatus] = useState("");
+  const [itemFileStatus, setItemFileStatus] = useState<Record<number, string>>({});
 
   const selectedItem = useMemo(() => {
     const items = program?.items || [];
@@ -76,16 +75,16 @@ export default function ControlPage() {
   const selectedSlides = serverSlides || fallbackSlides;
   const mainOutput = liveState?.outputs?.main || liveState;
   const stageOutput = liveState?.outputs?.stage || liveState;
-  const mainSongPhonogram = mainOutput?.activeOutput === "program" && mainOutput.currentItem?.type === "song" && mainOutput.currentItem.filePath
+  const mainSongPhonogram = mainOutput?.activeOutput === "program" && mainOutput.currentItem?.type === "song" && mainOutput.currentItem.audioFilePath
     ? {
         title: `Fonograma - ${mainOutput.currentItem.title}`,
-        filePath: mainOutput.currentItem.filePath
+        filePath: mainOutput.currentItem.audioFilePath
       }
     : null;
-  const stageSongPhonogram = stageOutput?.activeOutput === "program" && stageOutput.currentItem?.type === "song" && stageOutput.currentItem.filePath
+  const stageSongPhonogram = stageOutput?.activeOutput === "program" && stageOutput.currentItem?.type === "song" && stageOutput.currentItem.audioFilePath
     ? {
         title: `Fonograma - ${stageOutput.currentItem.title}`,
-        filePath: stageOutput.currentItem.filePath
+        filePath: stageOutput.currentItem.audioFilePath
       }
     : null;
   const activeAudio = mainSongPhonogram
@@ -176,27 +175,27 @@ export default function ControlPage() {
     }
   }
 
-  async function handlePhonogramUpload() {
-    if (!selectedItem || selectedItem.type !== "song") {
-      setPhonogramStatus("Selecteaza mai intai o cantare.");
-      return;
-    }
+  async function handleProgramItemFileUpload(item: ProgramItem, kind: "visual" | "audio", file: File | null) {
+    if (!file) return;
+    setItemFileStatus((current) => ({
+      ...current,
+      [item.id]: kind === "visual" ? "Se copiaza fisierul cu cuvinte..." : "Se copiaza fonograma..."
+    }));
 
-    if (!phonogramFile) {
-      setPhonogramStatus("Alege un fisier audio pentru fonograma.");
-      return;
-    }
+    const response = kind === "visual"
+      ? await api.attachProgramItemVisual(item.id, file)
+      : await api.attachProgramItemAudio(item.id, file);
 
-    setPhonogramStatus("Se copiaza fonograma in biblioteca aplicatiei...");
-    const response = await api.attachProgramItemAudio(selectedItem.id, phonogramFile);
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: "Nu s-a putut salva fonograma." }));
-      setPhonogramStatus(error.error);
+      const error = await response.json().catch(() => ({ error: "Nu s-a putut salva fisierul." }));
+      setItemFileStatus((current) => ({ ...current, [item.id]: error.error }));
       return;
     }
 
-    setPhonogramFile(null);
-    setPhonogramStatus("Fonograma a fost atasata la cantare.");
+    setItemFileStatus((current) => ({
+      ...current,
+      [item.id]: kind === "visual" ? "Cuvintele au fost atasate." : "Fonograma a fost atasata."
+    }));
   }
 
   if (loading) {
@@ -224,6 +223,30 @@ export default function ControlPage() {
                   <strong>{item.title}</strong>
                   {item.song ? <div className="muted">{item.song.title}</div> : null}
                 </button>
+                {item.type === "song" ? (
+                  <div className="program-asset-actions">
+                    <label className={`asset-pill ${item.filePath ? "ready" : ""}`}>
+                      Cuvinte
+                      <input
+                        accept=".ppt,.pptx,.pps,.ppsx,.pdf"
+                        type="file"
+                        onChange={(event) => handleProgramItemFileUpload(item, "visual", event.target.files?.[0] || null)}
+                      />
+                    </label>
+                    <label className={`asset-pill ${item.audioFilePath ? "ready" : ""}`}>
+                      Fonograma
+                      <input
+                        accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac"
+                        type="file"
+                        onChange={(event) => handleProgramItemFileUpload(item, "audio", event.target.files?.[0] || null)}
+                      />
+                    </label>
+                    <div className="program-asset-status">
+                      {itemFileStatus[item.id]
+                        || `${item.filePath ? "Cuvinte gata" : "Cuvinte din biblioteca"} / ${item.audioFilePath ? "fonograma gata" : "fara fonograma"}`}
+                    </div>
+                  </div>
+                ) : null}
                 <div className="program-send-actions">
                   <button onClick={() => api.goLive(item.id, 0, "main")}>Sala</button>
                   <button onClick={() => api.goLive(item.id, 0, "stage")}>Scena</button>
@@ -293,40 +316,6 @@ export default function ControlPage() {
             </button>
           ))}
         </div>
-
-        {selectedItem?.type === "song" ? (
-          <section className="phonogram-panel">
-            <div className="top-row">
-              <div>
-                <h3 className="title">Fonograma cantarii</h3>
-                <div className="muted">
-                  {selectedItem.filePath
-                    ? `Fonograma atasata: ${selectedItem.filePath.split("/").pop()}`
-                    : "Ataseaza un fisier audio care va porni din panoul operator cand cantarea este live."}
-                </div>
-              </div>
-              <FilePlus size={20} />
-            </div>
-            <div className="phonogram-actions">
-              <label className="primary-btn file-picker-btn">
-                <FilePlus size={16} /> Alege fonograma
-                <input
-                  accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac"
-                  type="file"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0] || null;
-                    setPhonogramFile(file);
-                    setPhonogramStatus(file ? file.name : "");
-                  }}
-                />
-              </label>
-              <button className="ghost-btn" onClick={handlePhonogramUpload}>
-                Ataseaza la cantare
-              </button>
-            </div>
-            <div className="muted">{phonogramStatus || "Versurile raman pe ecrane; sunetul se reda din control."}</div>
-          </section>
-        ) : null}
 
         <section className="media-picker-panel">
           <div className="top-row">

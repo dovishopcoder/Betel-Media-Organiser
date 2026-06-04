@@ -161,6 +161,42 @@ button:disabled {
   margin-top: 8px;
 }
 
+.program-asset-actions {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 8px;
+}
+
+.asset-pill {
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 12px;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 6px;
+}
+
+.asset-pill.ready {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.asset-pill input {
+  display: none;
+}
+
+.program-asset-status {
+  color: var(--muted);
+  font-size: 11px;
+  grid-column: 1 / -1;
+  line-height: 1.25;
+}
+
 .program-send-actions button {
   border-radius: 5px;
   font-size: 12px;
@@ -241,19 +277,6 @@ button:disabled {
   border-top: 1px solid var(--line);
   margin-top: 22px;
   padding-top: 16px;
-}
-
-.phonogram-panel {
-  border-top: 1px solid var(--line);
-  margin-top: 22px;
-  padding-top: 16px;
-}
-
-.phonogram-actions {
-  align-items: center;
-  display: flex;
-  gap: 10px;
-  margin: 12px 0 8px;
 }
 
 .media-picker-grid {

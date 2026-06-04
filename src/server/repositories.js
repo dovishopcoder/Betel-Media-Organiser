@@ -28,6 +28,7 @@ function mapProgramItem(row) {
     title: row.title,
     songId: row.song_id,
     filePath: row.file_path,
+    audioFilePath: row.audio_file_path,
     notes: row.notes,
     sortOrder: row.sort_order,
     song: row.song_title
@@ -43,6 +44,13 @@ function mapProgramItem(row) {
 }
 
 function createSlidesForItem(item) {
+  if (item.type === "song" && item.filePath) {
+    const presentationSlides = extractPresentationSlides(item);
+    if (presentationSlides.length > 0) {
+      return presentationSlides;
+    }
+  }
+
   if (item.type === "song" && item.song) {
     return item.song.displayOrder.map((sectionKey, index) => ({
       id: `${item.id}-${sectionKey}-${index}`,
@@ -135,14 +143,15 @@ function createRepositories(db) {
     addItem(programId, input) {
       const maxOrder = db.prepare("SELECT COALESCE(MAX(sort_order), 0) as maxOrder FROM program_items WHERE program_id = ?").get(programId).maxOrder;
       const result = db.prepare(`
-        INSERT INTO program_items (program_id, item_type, title, song_id, file_path, notes, sort_order)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO program_items (program_id, item_type, title, song_id, file_path, audio_file_path, notes, sort_order)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         programId,
         input.type,
         input.title,
         input.songId || null,
         input.filePath || null,
+        input.audioFilePath || null,
         input.notes || "",
         maxOrder + 1
       );
@@ -152,6 +161,14 @@ function createRepositories(db) {
       db.prepare(`
         UPDATE program_items
         SET file_path = ?
+        WHERE id = ?
+      `).run(input.filePath || null, itemId);
+      return programs.getItem(itemId);
+    },
+    attachAudio(itemId, input) {
+      db.prepare(`
+        UPDATE program_items
+        SET audio_file_path = ?
         WHERE id = ?
       `).run(input.filePath || null, itemId);
       return programs.getItem(itemId);

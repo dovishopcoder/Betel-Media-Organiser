@@ -43,6 +43,38 @@ app.prepare().then(() => {
   const repos = createRepositories(db);
   let liveState = createInitialLiveState(repos);
 
+  function refreshLiveProgramItem(updatedItem) {
+    const refreshOutput = (output) => {
+      if (!output?.currentItem || output.currentItem.id !== updatedItem.id) return output;
+
+      const slides = repos.slides.forProgramItem(updatedItem);
+      const slideIndex = Math.max(0, Math.min(output.currentSlideIndex || 0, Math.max(slides.length - 1, 0)));
+      return {
+        ...output,
+        currentItem: updatedItem,
+        currentSlideIndex: slideIndex,
+        currentSlide: output.activeOutput === "program" ? slides[slideIndex] || null : output.currentSlide,
+        nextSlide: output.activeOutput === "program" ? getNextSlide(slides, slideIndex) : output.nextSlide,
+        activeOutput: output.activeOutput === "program" && slides[slideIndex] ? "program" : output.activeOutput
+      };
+    };
+
+    const outputs = {
+      main: refreshOutput(liveState.outputs.main),
+      stage: refreshOutput(liveState.outputs.stage)
+    };
+
+    liveState = {
+      ...liveState,
+      outputs,
+      ...(outputs.main || {}),
+      programOrder: repos.programs.getActiveWithItems(),
+      updatedAt: new Date().toISOString()
+    };
+    io.emit("program:update", liveState.programOrder);
+    io.emit("live:update", liveState);
+  }
+
   expressApp.use(express.json({ limit: "350mb" }));
   expressApp.use("/media", express.static(path.join(__dirname, "media")));
 
@@ -100,26 +132,35 @@ app.prepare().then(() => {
         return res.status(400).json({ error: "Alege un fisier audio acceptat." });
       }
 
+      const updatedItem = repos.programs.attachAudio(item.id, {
+        filePath: `/media/library/${req.file.filename}`
+      });
+      refreshLiveProgramItem(updatedItem);
+      res.json({ item: updatedItem, program: liveState.programOrder });
+    } catch (error) {
+      if (req.file?.path && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  expressApp.post("/api/program-items/:itemId/visual", mediaUpload.single("file"), (req, res) => {
+    try {
+      const item = repos.programs.getItem(Number(req.params.itemId));
+      if (!item) return res.status(404).json({ error: "Program item not found" });
+      if (item.type !== "song") return res.status(400).json({ error: "Cuvintele pot fi atasate doar la o cantare." });
+      if (!req.file) return res.status(400).json({ error: "Alege fisierul pentru cuvinte." });
+
+      if (!isAllowedMedia({ fileName: req.file.originalname, mediaType: "presentation", mimeType: req.file.mimetype })) {
+        fs.unlinkSync(req.file.path);
+        return res.status(400).json({ error: "Pentru cuvinte alege o prezentare PowerPoint sau PDF." });
+      }
+
       const updatedItem = repos.programs.attachFile(item.id, {
         filePath: `/media/library/${req.file.filename}`
       });
-      const refreshOutput = (output) => output?.currentItem?.id === updatedItem.id
-        ? { ...output, currentItem: updatedItem }
-        : output;
-      const outputs = {
-        main: refreshOutput(liveState.outputs.main),
-        stage: refreshOutput(liveState.outputs.stage)
-      };
-
-      liveState = {
-        ...liveState,
-        outputs,
-        ...(outputs.main || {}),
-        programOrder: repos.programs.getActiveWithItems(),
-        updatedAt: new Date().toISOString()
-      };
-      io.emit("program:update", liveState.programOrder);
-      io.emit("live:update", liveState);
+      refreshLiveProgramItem(updatedItem);
       res.json({ item: updatedItem, program: liveState.programOrder });
     } catch (error) {
       if (req.file?.path && fs.existsSync(req.file.path)) {

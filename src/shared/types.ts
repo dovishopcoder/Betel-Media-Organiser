@@ -24,6 +24,7 @@ export type ProgramItem = {
   title: string;
   songId?: number;
   filePath?: string;
+  audioFilePath?: string;
   notes?: string;
   sortOrder: number;
   song?: Song | null;

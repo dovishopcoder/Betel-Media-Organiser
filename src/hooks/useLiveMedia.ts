@@ -105,6 +105,15 @@ export function useLiveMedia() {
         body: formData
       });
     },
+    attachProgramItemVisual(itemId: number, file: File) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      return fetch(`/api/program-items/${itemId}/visual`, {
+        method: "POST",
+        body: formData
+      });
+    },
     videoControl(target: "main" | "stage" | "both", action: "play" | "pause" | "restart") {
       return fetch("/api/live/video-control", {
         method: "POST",
