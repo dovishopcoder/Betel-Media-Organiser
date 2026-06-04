@@ -78,6 +78,7 @@ function detectMediaTypeFromFile(file: File): "audio" | "video" | "presentation"
 export default function ControlPage() {
   const { programs, program, background, liveState, loading, refresh, api } = useLiveMedia();
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  const [selectedServiceType, setSelectedServiceType] = useState("serviciul_divin");
   const [backgroundStatus, setBackgroundStatus] = useState("");
   const [serviceStatus, setServiceStatus] = useState("");
   const [builderStatus, setBuilderStatus] = useState("");
@@ -94,6 +95,10 @@ export default function ControlPage() {
     const items = program?.items || [];
     return items.find((item) => item.id === selectedItemId) || liveState?.currentItem || items[0] || null;
   }, [program, selectedItemId, liveState]);
+  const selectedService = serviceTemplates.find((service) => service.type === selectedServiceType) || serviceTemplates[0];
+  const savedServicesForType = useMemo(() => (
+    programs.filter((service) => (service.serviceType || "custom") === selectedServiceType)
+  ), [programs, selectedServiceType]);
 
   const fallbackSlides = useMemo(() => slidesForItem(selectedItem), [selectedItem]);
   const selectedSlides = serverSlides || fallbackSlides;
@@ -141,6 +146,12 @@ export default function ControlPage() {
       mounted = false;
     };
   }, [api, selectedItem]);
+
+  useEffect(() => {
+    if (program?.serviceType) {
+      setSelectedServiceType(program.serviceType);
+    }
+  }, [program?.serviceType]);
 
   async function handleBackgroundUpload(file: File | null) {
     if (!file) return;
@@ -328,27 +339,40 @@ export default function ControlPage() {
             <a className="muted" href="/stage-screen" target="_blank">Stage</a>
           </div>
           <section className="service-builder">
-            <label>
-              <span className="item-type">Serviciu activ</span>
-              <select
-                value={program?.id || ""}
-                onChange={(event) => event.target.value && handleActivateProgram(Number(event.target.value))}
-              >
-                {programs.map((service) => (
-                  <option key={service.id} value={service.id}>
-                    {service.title}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="item-type">Tip serviciu</div>
             <div className="service-template-grid">
               {serviceTemplates.map((service) => (
-                <button key={service.type} onClick={() => handleCreateService(service.type, service.title)}>
+                <button
+                  className={selectedServiceType === service.type ? "active" : ""}
+                  key={service.type}
+                  onClick={() => setSelectedServiceType(service.type)}
+                >
                   {service.title}
                 </button>
               ))}
             </div>
-            <div className="muted">{serviceStatus || `${program?.title || "Fara program activ"} - ${program?.service_date || ""}`}</div>
+            <div className="service-mode-grid">
+              <button className="primary-btn" onClick={() => handleCreateService(selectedService.type, selectedService.title)}>
+                Nou
+              </button>
+              <label>
+                <span className="item-type">Salvate</span>
+                <select
+                  value={program?.serviceType === selectedServiceType ? program.id : ""}
+                  onChange={(event) => event.target.value && handleActivateProgram(Number(event.target.value))}
+                >
+                  <option value="">Alege dupa data</option>
+                  {savedServicesForType.map((service) => (
+                    <option key={service.id} value={service.id}>
+                      {service.service_date} - {service.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="muted">
+              {serviceStatus || `${program?.title || "Fara program activ"} - ${program?.service_date || ""}`}
+            </div>
           </section>
 
           <section className="block-builder">

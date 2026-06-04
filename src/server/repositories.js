@@ -92,6 +92,44 @@ function createSlidesForItem(item) {
   ];
 }
 
+const serviceProgramTemplates = {
+  vineri_seara: [
+    { type: "song", title: "Cantare deschidere", notes: "Cuvinte + fonograma" },
+    { type: "prayer", title: "Rugaciune", notes: "Moment de rugaciune" },
+    { type: "sermon", title: "Mesaj", notes: "Predica / devotional" },
+    { type: "song", title: "Cantare incheiere", notes: "Cuvinte + fonograma" }
+  ],
+  scoala_sabat: [
+    { type: "song", title: "Cantare deschidere", notes: "Cuvinte + fonograma" },
+    { type: "prayer", title: "Rugaciune", notes: "Moment de rugaciune" },
+    { type: "special", title: "Studiu biblic", notes: "L lectie / clasa" },
+    { type: "announcements", title: "Anunturi", notes: "Anunturi pentru biserica" }
+  ],
+  serviciul_divin: [
+    { type: "song", title: "Cantare deschidere", notes: "Cuvinte + fonograma" },
+    { type: "prayer", title: "Rugaciune", notes: "Moment de rugaciune" },
+    { type: "announcements", title: "Anunturi", notes: "Anunturi pentru biserica" },
+    { type: "song", title: "Cantare speciala", notes: "Cuvinte + fonograma" },
+    { type: "sermon", title: "Predica", notes: "Mesaj / timer" },
+    { type: "song", title: "Cantare finala", notes: "Cuvinte + fonograma" }
+  ],
+  serviciul_seara: [
+    { type: "song", title: "Cantare deschidere", notes: "Cuvinte + fonograma" },
+    { type: "prayer", title: "Rugaciune", notes: "Moment de rugaciune" },
+    { type: "sermon", title: "Mesaj", notes: "Predica / devotional" },
+    { type: "special", title: "Moment special", notes: "Marturie / muzica" },
+    { type: "song", title: "Cantare finala", notes: "Cuvinte + fonograma" }
+  ],
+  sfanta_cina: [
+    { type: "song", title: "Cantare deschidere", notes: "Cuvinte + fonograma" },
+    { type: "prayer", title: "Rugaciune", notes: "Moment de rugaciune" },
+    { type: "sermon", title: "Meditatie", notes: "Mesaj scurt" },
+    { type: "special", title: "Sfanta cina", notes: "Moment special" },
+    { type: "song", title: "Cantare finala", notes: "Cuvinte + fonograma" }
+  ],
+  custom: []
+};
+
 function createRepositories(db) {
   const songs = {
     list() {
@@ -143,7 +181,12 @@ function createRepositories(db) {
         input.serviceDate || new Date().toISOString().slice(0, 10),
         input.serviceType || "custom"
       );
-      return programs.get(result.lastInsertRowid);
+      const programId = result.lastInsertRowid;
+      const templateItems = Array.isArray(input.items)
+        ? input.items
+        : serviceProgramTemplates[input.serviceType || "custom"] || [];
+      templateItems.forEach((item) => programs.addItem(programId, item));
+      return programs.get(programId);
     },
     activate(id) {
       const program = programs.get(id);

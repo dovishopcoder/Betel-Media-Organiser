@@ -162,6 +162,20 @@ button:disabled {
   padding: 0 6px;
 }
 
+.service-template-grid button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+.service-mode-grid {
+  align-items: end;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 82px 1fr;
+}
+
 .block-template-grid button:first-child {
   background: var(--accent);
   border-color: var(--accent);
