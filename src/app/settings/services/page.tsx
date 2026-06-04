@@ -35,18 +35,21 @@ export default function ServicesSettingsPage() {
   }
 
   return (
-    <section className="settings-section">
-      <div className="settings-section-header">
+    <section className="settings-section settings-service-page">
+      <div className="settings-section-header settings-hero">
         <div>
           <h2 className="title">Servicii si template-uri</h2>
-          <p className="muted">Alegi tipul de serviciu si creezi programul curent din template.</p>
+          <p className="muted">Alege tipul serviciului. Template-ul selectat va crea programul curent.</p>
         </div>
         <button className="primary-btn" onClick={handleCreateService}>Creeaza program curent</button>
       </div>
 
       <div className="settings-two-column">
         <div className="settings-card">
-          <div className="item-type">Tip serviciu</div>
+          <div>
+            <div className="item-type">Tip serviciu</div>
+            <h3 className="settings-card-title">Template disponibil</h3>
+          </div>
           <div className="service-type-list large">
             {serviceTemplates.map((service) => (
               <button
@@ -62,7 +65,10 @@ export default function ServicesSettingsPage() {
         </div>
 
         <div className="settings-card">
-          <div className="item-type">Template: {selectedService.title}</div>
+          <div>
+            <div className="item-type">Template</div>
+            <h3 className="settings-card-title">{selectedService.title}</h3>
+          </div>
           <div className="template-preview-list">
             {(serviceTemplateBlocks[selectedService.type] || []).length ? (
               serviceTemplateBlocks[selectedService.type].map((title, index) => (
