@@ -34,6 +34,7 @@ export type Program = {
   id: number;
   title: string;
   service_date: string;
+  serviceType?: string;
   status: string;
   items: ProgramItem[];
 };

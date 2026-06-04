@@ -106,6 +106,30 @@ app.prepare().then(() => {
     res.status(201).json(song);
   });
 
+  expressApp.post("/api/programs", (req, res) => {
+    const program = repos.programs.create(req.body || {});
+    liveState = {
+      ...liveState,
+      programOrder: repos.programs.getActiveWithItems(),
+      updatedAt: new Date().toISOString()
+    };
+    io.emit("program:update", liveState.programOrder);
+    res.status(201).json({ program, activeProgram: liveState.programOrder, programs: repos.programs.list() });
+  });
+
+  expressApp.post("/api/programs/:programId/activate", (req, res) => {
+    const activeProgram = repos.programs.activate(Number(req.params.programId));
+    if (!activeProgram) return res.status(404).json({ error: "Program not found" });
+
+    liveState = {
+      ...liveState,
+      programOrder: activeProgram,
+      updatedAt: new Date().toISOString()
+    };
+    io.emit("program:update", activeProgram);
+    res.json({ activeProgram, programs: repos.programs.list() });
+  });
+
   expressApp.post("/api/programs/:programId/items", (req, res) => {
     const item = repos.programs.addItem(Number(req.params.programId), req.body);
     liveState.programOrder = repos.programs.getActiveWithItems();

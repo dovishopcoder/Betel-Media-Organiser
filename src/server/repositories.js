@@ -43,6 +43,14 @@ function mapProgramItem(row) {
   };
 }
 
+function mapProgram(row) {
+  if (!row) return null;
+  return {
+    ...row,
+    serviceType: row.service_type || "custom"
+  };
+}
+
 function createSlidesForItem(item) {
   if (item.type === "song" && item.filePath) {
     const presentationSlides = extractPresentationSlides(item);
@@ -112,15 +120,38 @@ function createRepositories(db) {
 
   const programs = {
     list() {
-      return db.prepare("SELECT * FROM programs ORDER BY service_date DESC, id DESC").all();
+      return db.prepare("SELECT * FROM programs ORDER BY service_date DESC, id DESC").all().map(mapProgram);
     },
     getActiveWithItems() {
       const program = db.prepare("SELECT * FROM programs WHERE status = 'active' ORDER BY id DESC LIMIT 1").get();
       if (!program) return null;
       return {
-        ...program,
+        ...mapProgram(program),
         items: programs.items(program.id)
       };
+    },
+    get(id) {
+      return mapProgram(db.prepare("SELECT * FROM programs WHERE id = ?").get(id));
+    },
+    create(input) {
+      db.prepare("UPDATE programs SET status = 'inactive' WHERE status = 'active'").run();
+      const result = db.prepare(`
+        INSERT INTO programs (title, service_date, service_type, status)
+        VALUES (?, ?, ?, 'active')
+      `).run(
+        input.title,
+        input.serviceDate || new Date().toISOString().slice(0, 10),
+        input.serviceType || "custom"
+      );
+      return programs.get(result.lastInsertRowid);
+    },
+    activate(id) {
+      const program = programs.get(id);
+      if (!program) return null;
+
+      db.prepare("UPDATE programs SET status = 'inactive' WHERE status = 'active'").run();
+      db.prepare("UPDATE programs SET status = 'active' WHERE id = ?").run(id);
+      return programs.getActiveWithItems();
     },
     items(programId) {
       return db.prepare(`

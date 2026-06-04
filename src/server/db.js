@@ -25,6 +25,11 @@ function ensureDatabase(options = {}) {
 }
 
 function migrateDatabase(db) {
+  const programColumns = db.prepare("PRAGMA table_info(programs)").all().map((column) => column.name);
+  if (!programColumns.includes("service_type")) {
+    db.exec("ALTER TABLE programs ADD COLUMN service_type TEXT NOT NULL DEFAULT 'custom';");
+  }
+
   const programItemColumns = db.prepare("PRAGMA table_info(program_items)").all().map((column) => column.name);
   if (!programItemColumns.includes("audio_file_path")) {
     db.exec("ALTER TABLE program_items ADD COLUMN audio_file_path TEXT;");
@@ -57,8 +62,8 @@ function seedDatabase(db, options = {}) {
     VALUES (@title, @author, @sections_json, @display_order_json)
   `);
   const insertProgram = db.prepare(`
-    INSERT INTO programs (title, service_date, status)
-    VALUES (@title, @service_date, 'active')
+    INSERT INTO programs (title, service_date, service_type, status)
+    VALUES (@title, @service_date, @service_type, 'active')
   `);
   const insertItem = db.prepare(`
     INSERT INTO program_items (program_id, item_type, title, song_id, file_path, audio_file_path, notes, sort_order)
@@ -97,7 +102,8 @@ function seedDatabase(db, options = {}) {
 
     const programId = insertProgram.run({
       title: "Program Sabat",
-      service_date: new Date().toISOString().slice(0, 10)
+      service_date: new Date().toISOString().slice(0, 10),
+      service_type: "serviciul_divin"
     }).lastInsertRowid;
 
     insertItem.run({ program_id: programId, item_type: "song", title: "Cantare deschidere", song_id: songA, file_path: null, audio_file_path: null, notes: "Tempo moderat", sort_order: 1 });

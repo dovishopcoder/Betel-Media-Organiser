@@ -16,6 +16,26 @@ const itemLabels: Record<string, string> = {
   special: "Moment special"
 };
 
+const serviceTemplates = [
+  { type: "vineri_seara", title: "Vineri seara" },
+  { type: "scoala_sabat", title: "Scoala de sabat" },
+  { type: "serviciul_divin", title: "Serviciul Divin" },
+  { type: "serviciul_seara", title: "Serviciul seara" },
+  { type: "sfanta_cina", title: "Sfanta cina" },
+  { type: "custom", title: "Serviciu custom" }
+];
+
+const blockTemplates = [
+  { type: "song", title: "Cantare", notes: "Cuvinte + fonograma" },
+  { type: "prayer", title: "Rugaciune", notes: "Moment de rugaciune" },
+  { type: "sermon", title: "Predica", notes: "Mesaj / timer" },
+  { type: "presentation", title: "Prezentare", notes: "PowerPoint / PDF" },
+  { type: "announcements", title: "Anunturi", notes: "Anunturi pentru biserica" },
+  { type: "video", title: "Video", notes: "Fisier video" },
+  { type: "pause", title: "Pauza", notes: "Fundal / repaus" },
+  { type: "special", title: "Moment special", notes: "Moment special" }
+];
+
 function slidesForItem(item: ProgramItem | null): Slide[] {
   if (!item) return [];
   if (item.type === "song" && item.song) {
@@ -56,9 +76,11 @@ function detectMediaTypeFromFile(file: File): "audio" | "video" | "presentation"
 }
 
 export default function ControlPage() {
-  const { program, background, liveState, loading, api } = useLiveMedia();
+  const { programs, program, background, liveState, loading, refresh, api } = useLiveMedia();
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [backgroundStatus, setBackgroundStatus] = useState("");
+  const [serviceStatus, setServiceStatus] = useState("");
+  const [builderStatus, setBuilderStatus] = useState("");
   const [mediaType, setMediaType] = useState<"audio" | "video" | "presentation">("presentation");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaTitle, setMediaTitle] = useState("");
@@ -198,6 +220,63 @@ export default function ControlPage() {
     }));
   }
 
+  async function handleCreateService(serviceType: string, title: string) {
+    setServiceStatus(`Se creeaza ${title}...`);
+    const today = new Date().toISOString().slice(0, 10);
+    const response = await api.createProgram({
+      title: `${title} - ${today}`,
+      serviceDate: today,
+      serviceType
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: "Nu s-a putut crea serviciul." }));
+      setServiceStatus(error.error);
+      return;
+    }
+
+    setSelectedItemId(null);
+    await refresh();
+    setServiceStatus(`${title} a fost creat si activat.`);
+  }
+
+  async function handleActivateProgram(programId: number) {
+    setServiceStatus("Se schimba serviciul activ...");
+    const response = await api.activateProgram(programId);
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: "Nu s-a putut activa serviciul." }));
+      setServiceStatus(error.error);
+      return;
+    }
+
+    setSelectedItemId(null);
+    await refresh();
+    setServiceStatus("Serviciul activ a fost schimbat.");
+  }
+
+  async function handleAddBlock(template: typeof blockTemplates[number]) {
+    if (!program) {
+      setBuilderStatus("Creeaza mai intai un serviciu.");
+      return;
+    }
+
+    setBuilderStatus(`Se adauga ${template.title}...`);
+    const response = await api.addProgramItem(program.id, {
+      type: template.type,
+      title: template.title,
+      notes: template.notes
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: "Nu s-a putut adauga punctul." }));
+      setBuilderStatus(error.error);
+      return;
+    }
+
+    await refresh();
+    setBuilderStatus(`${template.title} a fost adaugat in program.`);
+  }
+
   if (loading) {
     return <main className="screen"><div className="blank-output">Se incarca panoul media...</div></main>;
   }
@@ -211,7 +290,42 @@ export default function ControlPage() {
             <a className="muted" href="/main-screen" target="_blank">Main</a>
             <a className="muted" href="/stage-screen" target="_blank">Stage</a>
           </div>
-          <p className="muted">{program?.title || "Fara program activ"} - {program?.service_date}</p>
+          <section className="service-builder">
+            <label>
+              <span className="item-type">Serviciu activ</span>
+              <select
+                value={program?.id || ""}
+                onChange={(event) => event.target.value && handleActivateProgram(Number(event.target.value))}
+              >
+                {programs.map((service) => (
+                  <option key={service.id} value={service.id}>
+                    {service.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="service-template-grid">
+              {serviceTemplates.map((service) => (
+                <button key={service.type} onClick={() => handleCreateService(service.type, service.title)}>
+                  {service.title}
+                </button>
+              ))}
+            </div>
+            <div className="muted">{serviceStatus || `${program?.title || "Fara program activ"} - ${program?.service_date || ""}`}</div>
+          </section>
+
+          <section className="block-builder">
+            <div className="item-type">Builder puncte</div>
+            <div className="block-template-grid">
+              {blockTemplates.map((template) => (
+                <button key={template.type} onClick={() => handleAddBlock(template)}>
+                  {itemLabels[template.type] || template.title}
+                </button>
+              ))}
+            </div>
+            <div className="muted">{builderStatus || "Adauga puncte in ordinea serviciului."}</div>
+          </section>
+
           <div className="item-list">
             {program?.items.map((item) => (
               <div

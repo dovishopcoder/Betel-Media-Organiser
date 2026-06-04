@@ -125,6 +125,49 @@ button:disabled {
   margin-top: 12px;
 }
 
+.service-builder,
+.block-builder {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.service-builder label {
+  display: grid;
+  gap: 5px;
+}
+
+.service-builder select {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  min-height: 34px;
+  padding: 0 8px;
+  width: 100%;
+}
+
+.service-template-grid,
+.block-template-grid {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.service-template-grid button,
+.block-template-grid button {
+  border-radius: 5px;
+  font-size: 12px;
+  min-height: 30px;
+  padding: 0 6px;
+}
+
+.block-template-grid button:first-child {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
 .program-item,
 .song-item,
 .slide-tile {

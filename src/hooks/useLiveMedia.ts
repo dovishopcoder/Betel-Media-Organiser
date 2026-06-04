@@ -6,6 +6,7 @@ import type { LiveState, Program, Slide, Song } from "@/shared/types";
 
 type Bootstrap = {
   songs: Song[];
+  programs: Program[];
   activeProgram: Program | null;
   background: {
     url: string;
@@ -27,24 +28,30 @@ export function getLiveMediaSocket() {
 
 export function useLiveMedia() {
   const [songs, setSongs] = useState<Song[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [program, setProgram] = useState<Program | null>(null);
   const [background, setBackground] = useState({ url: "/media/backgrounds/main.jpg", exists: false });
   const [liveState, setLiveState] = useState<LiveState | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let mounted = true;
-
-    fetch("/api/bootstrap")
+  async function loadBootstrap(mounted = true) {
+    return fetch("/api/bootstrap")
       .then((res) => res.json())
       .then((data: Bootstrap) => {
         if (!mounted) return;
         setSongs(data.songs);
+        setPrograms(data.programs);
         setProgram(data.activeProgram);
         setBackground(data.background);
         setLiveState(data.liveState);
         setLoading(false);
       });
+  }
+
+  useEffect(() => {
+    let mounted = true;
+
+    loadBootstrap(mounted);
 
     const mediaSocket = getSocket();
     mediaSocket.on("live:update", setLiveState);
@@ -128,6 +135,25 @@ export function useLiveMedia() {
         body: JSON.stringify(input)
       });
     },
+    createProgram(input: { title: string; serviceDate?: string; serviceType?: string }) {
+      return fetch("/api/programs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input)
+      });
+    },
+    activateProgram(programId: number) {
+      return fetch(`/api/programs/${programId}/activate`, {
+        method: "POST"
+      });
+    },
+    addProgramItem(programId: number, input: { type: string; title: string; notes?: string }) {
+      return fetch(`/api/programs/${programId}/items`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input)
+      });
+    },
     setMainBackground(dataUrl: string) {
       return fetch("/api/backgrounds/main", {
         method: "POST",
@@ -154,5 +180,5 @@ export function useLiveMedia() {
     }
   }), []);
 
-  return { songs, program, background, liveState, loading, api };
+  return { songs, programs, program, background, liveState, loading, refresh: loadBootstrap, api };
 }
