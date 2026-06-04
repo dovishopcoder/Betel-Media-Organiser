@@ -137,6 +137,17 @@ app.prepare().then(() => {
     res.status(201).json(item);
   });
 
+  expressApp.post("/api/programs/:programId/items/reorder", (req, res) => {
+    const activeProgram = repos.programs.reorderItems(Number(req.params.programId), req.body?.itemIds || []);
+    liveState = {
+      ...liveState,
+      programOrder: activeProgram,
+      updatedAt: new Date().toISOString()
+    };
+    io.emit("program:update", activeProgram);
+    res.json({ program: activeProgram });
+  });
+
   expressApp.get("/api/program-items/:itemId/slides", (req, res) => {
     const item = repos.programs.getItem(Number(req.params.itemId));
     if (!item) return res.status(404).json({ error: "Program item not found" });

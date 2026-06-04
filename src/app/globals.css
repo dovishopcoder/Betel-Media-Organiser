@@ -178,14 +178,39 @@ button:disabled {
   width: 100%;
 }
 
+.program-item {
+  background: var(--panel);
+}
+
 .program-item.live {
   border-color: var(--live);
   box-shadow: inset 4px 0 0 var(--live);
 }
 
+.program-item.dragging {
+  opacity: 0.55;
+}
+
+.program-item.drop-target {
+  border-color: var(--accent);
+  box-shadow: inset 0 3px 0 var(--accent);
+}
+
 .program-item.idle-next {
   border-color: var(--accent);
   box-shadow: inset 4px 0 0 var(--accent);
+}
+
+.drag-handle {
+  color: var(--muted);
+  cursor: grab;
+  font-size: 11px;
+  margin: -2px 0 6px;
+  text-transform: uppercase;
+}
+
+.program-item:active .drag-handle {
+  cursor: grabbing;
 }
 
 .program-select {

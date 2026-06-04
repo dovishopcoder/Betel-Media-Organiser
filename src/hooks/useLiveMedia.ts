@@ -154,6 +154,13 @@ export function useLiveMedia() {
         body: JSON.stringify(input)
       });
     },
+    reorderProgramItems(programId: number, itemIds: number[]) {
+      return fetch(`/api/programs/${programId}/items/reorder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemIds })
+      });
+    },
     setMainBackground(dataUrl: string) {
       return fetch("/api/backgrounds/main", {
         method: "POST",

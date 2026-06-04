@@ -188,6 +188,23 @@ function createRepositories(db) {
       );
       return programs.getItem(result.lastInsertRowid);
     },
+    reorderItems(programId, itemIds) {
+      const ids = Array.isArray(itemIds) ? itemIds.map(Number).filter(Boolean) : [];
+      if (ids.length === 0) return programs.getActiveWithItems();
+
+      const existingIds = new Set(db.prepare("SELECT id FROM program_items WHERE program_id = ?").all(programId).map((row) => row.id));
+      const updateOrder = db.prepare("UPDATE program_items SET sort_order = ? WHERE id = ? AND program_id = ?");
+      const tx = db.transaction(() => {
+        ids.forEach((itemId, index) => {
+          if (existingIds.has(itemId)) {
+            updateOrder.run(index + 1, itemId, programId);
+          }
+        });
+      });
+
+      tx();
+      return programs.getActiveWithItems();
+    },
     attachFile(itemId, input) {
       db.prepare(`
         UPDATE program_items

@@ -87,6 +87,8 @@ export default function ControlPage() {
   const [mediaStatus, setMediaStatus] = useState("");
   const [serverSlides, setServerSlides] = useState<Slide[] | null>(null);
   const [itemFileStatus, setItemFileStatus] = useState<Record<number, string>>({});
+  const [draggedItemId, setDraggedItemId] = useState<number | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<number | null>(null);
 
   const selectedItem = useMemo(() => {
     const items = program?.items || [];
@@ -277,6 +279,41 @@ export default function ControlPage() {
     setBuilderStatus(`${template.title} a fost adaugat in program.`);
   }
 
+  async function handleProgramItemDrop(targetItemId: number) {
+    if (!program || draggedItemId === null || draggedItemId === targetItemId) {
+      setDraggedItemId(null);
+      setDropTargetId(null);
+      return;
+    }
+
+    const items = program.items || [];
+    const draggedIndex = items.findIndex((item) => item.id === draggedItemId);
+    const targetIndex = items.findIndex((item) => item.id === targetItemId);
+    if (draggedIndex < 0 || targetIndex < 0) {
+      setDraggedItemId(null);
+      setDropTargetId(null);
+      return;
+    }
+
+    const nextItems = [...items];
+    const [draggedItem] = nextItems.splice(draggedIndex, 1);
+    nextItems.splice(targetIndex, 0, draggedItem);
+
+    setBuilderStatus("Se salveaza ordinea programului...");
+    const response = await api.reorderProgramItems(program.id, nextItems.map((item) => item.id));
+    setDraggedItemId(null);
+    setDropTargetId(null);
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: "Nu s-a putut salva ordinea." }));
+      setBuilderStatus(error.error);
+      return;
+    }
+
+    await refresh();
+    setBuilderStatus("Ordinea programului a fost salvata.");
+  }
+
   if (loading) {
     return <main className="screen"><div className="blank-output">Se incarca panoul media...</div></main>;
   }
@@ -329,9 +366,30 @@ export default function ControlPage() {
           <div className="item-list">
             {program?.items.map((item) => (
               <div
-                className={`program-item ${liveState?.currentItem?.id === item.id ? "live" : ""}`}
+                className={`program-item ${liveState?.currentItem?.id === item.id ? "live" : ""} ${draggedItemId === item.id ? "dragging" : ""} ${dropTargetId === item.id ? "drop-target" : ""}`}
+                draggable
                 key={item.id}
+                onDragEnd={() => {
+                  setDraggedItemId(null);
+                  setDropTargetId(null);
+                }}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  if (draggedItemId !== null && draggedItemId !== item.id) {
+                    setDropTargetId(item.id);
+                  }
+                }}
+                onDragStart={(event) => {
+                  event.dataTransfer.effectAllowed = "move";
+                  event.dataTransfer.setData("text/plain", String(item.id));
+                  setDraggedItemId(item.id);
+                }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  handleProgramItemDrop(item.id);
+                }}
               >
+                <div className="drag-handle" aria-hidden="true">Drag</div>
                 <button className="program-select" onClick={() => setSelectedItemId(item.id)}>
                   <div className="item-type">{itemLabels[item.type] || item.type}</div>
                   <strong>{item.title}</strong>
