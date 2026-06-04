@@ -89,6 +89,19 @@ export default function ControlPage() {
       : stageOutput?.currentSlide?.type === "audio" && stageOutput.currentSlide.filePath
         ? stageOutput.currentSlide
         : null);
+  const selectedSongAudio = selectedItem?.type === "song" && selectedItem.audioFilePath
+    ? {
+        title: `Fonograma - ${selectedItem.title}`,
+        filePath: selectedItem.audioFilePath
+      }
+    : null;
+  const selectedBlockAudio = selectedItem?.type === "audio" && selectedItem.filePath
+    ? {
+        title: selectedItem.title,
+        filePath: selectedItem.filePath
+      }
+    : null;
+  const centerAudio = activeAudio || selectedSongAudio || selectedBlockAudio;
   const mainVideoLive = mainOutput?.activeOutput === "program" && mainOutput.currentSlide?.type === "video" && mainOutput.currentSlide.filePath;
   const stageVideoLive = stageOutput?.activeOutput === "program" && stageOutput.currentSlide?.type === "video" && stageOutput.currentSlide.filePath;
   const activeVideo = mainVideoLive
@@ -335,6 +348,17 @@ export default function ControlPage() {
           ))}
         </div>
 
+        {centerAudio ? (
+          <section className="audio-control-panel center-audio-panel">
+            <div className="item-type">Player audio</div>
+            <strong>{centerAudio.title}</strong>
+            <audio key={centerAudio.filePath} src={centerAudio.filePath || ""} controls autoPlay={Boolean(activeAudio)} />
+            <div className="muted">
+              {activeAudio ? "Audio-ul este live acum." : "Audio pregatit pentru blocul selectat."}
+            </div>
+          </section>
+        ) : null}
+
         {false ? (
           <section className="media-picker-panel">
             <div className="top-row">
@@ -387,15 +411,6 @@ export default function ControlPage() {
           <Monitor size={20} />
         </div>
         <p className="muted">Alege separat ce apare pe fiecare ecran.</p>
-
-        {activeAudio ? (
-          <section className="audio-control-panel">
-            <div className="item-type">Redare audio</div>
-            <strong>{activeAudio.title}</strong>
-            <audio key={activeAudio.filePath} src={activeAudio.filePath || ""} controls autoPlay />
-            <div className="muted">Ecranele raman pe fundal; sunetul se reda din panoul operator.</div>
-          </section>
-        ) : null}
 
         {activeVideo ? (
           <section className="video-control-panel">

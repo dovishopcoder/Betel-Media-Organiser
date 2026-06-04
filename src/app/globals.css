@@ -749,6 +749,10 @@ button:disabled {
   width: 100%;
 }
 
+.center-audio-panel {
+  margin-top: 18px;
+}
+
 .video-control-actions {
   display: grid;
   gap: 6px;
