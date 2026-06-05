@@ -349,11 +349,6 @@ export default function ControlPage() {
           ) : null}
           {serviceStatus ? <div className="muted">{serviceStatus}</div> : null}
         </section>
-        <div className="sidebar-empty-state">
-          <div className="item-type">Coloana stanga</div>
-          <strong>Pregatita pentru constructie</strong>
-          <div className="muted">Aici vom construi programul serviciului, pas cu pas.</div>
-        </div>
       </aside>
 
       <section className="workspace">
