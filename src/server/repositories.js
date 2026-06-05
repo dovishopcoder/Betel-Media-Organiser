@@ -1,6 +1,10 @@
 const { extractPresentationSlides } = require("./presentation-slides");
 const { getServiceProgramTemplate } = require("./service-templates");
 
+function isVideoPath(filePath) {
+  return /\.(mp4|webm|ogg|mov|mkv|avi)$/i.test(filePath || "");
+}
+
 function parseJson(value, fallback) {
   try {
     return JSON.parse(value);
@@ -53,6 +57,21 @@ function mapProgram(row) {
 }
 
 function createSlidesForItem(item) {
+  if (item.type === "song" && item.filePath && isVideoPath(item.filePath)) {
+    return [
+      {
+        id: `${item.id}-karaoke-video`,
+        type: "video",
+        label: "karaoke",
+        title: item.title,
+        body: item.notes || item.title,
+        filePath: item.filePath,
+        notes: item.notes || "",
+        sortOrder: 0
+      }
+    ];
+  }
+
   if (item.type === "song" && item.filePath) {
     const presentationSlides = extractPresentationSlides(item);
     if (presentationSlides.length > 0) {

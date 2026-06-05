@@ -198,9 +198,10 @@ app.prepare().then(() => {
       if (item.type !== "song") return res.status(400).json({ error: "Cuvintele pot fi atasate doar la o cantare." });
       if (!req.file) return res.status(400).json({ error: "Alege fisierul pentru cuvinte." });
 
-      if (!isAllowedMedia({ fileName: req.file.originalname, mediaType: "presentation", mimeType: req.file.mimetype })) {
+      const detectedMediaType = detectMediaType({ fileName: req.file.originalname, mimeType: req.file.mimetype });
+      if (!["presentation", "video"].includes(detectedMediaType) || !isAllowedMedia({ fileName: req.file.originalname, mediaType: detectedMediaType, mimeType: req.file.mimetype })) {
         fs.unlinkSync(req.file.path);
-        return res.status(400).json({ error: "Pentru cuvinte alege o prezentare PowerPoint sau PDF." });
+        return res.status(400).json({ error: "Pentru cantare alege PowerPoint/PDF sau video karaoke." });
       }
 
       const updatedItem = repos.programs.attachFile(item.id, {

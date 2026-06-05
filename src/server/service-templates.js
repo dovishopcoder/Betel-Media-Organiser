@@ -7,38 +7,38 @@ const templatesPath = path.join(dataDir, "service-templates.json");
 
 const defaultServiceProgramTemplates = {
   vineri_seara: [
-    { type: "song", title: "Cantare deschidere", notes: "Cuvinte + fonograma" },
+    { type: "song", title: "Cantare deschidere", notes: "Text / fonograma / video karaoke" },
     { type: "prayer", title: "Rugaciune", notes: "Moment de rugaciune" },
     { type: "sermon", title: "Mesaj", notes: "Predica / devotional" },
-    { type: "song", title: "Cantare incheiere", notes: "Cuvinte + fonograma" }
+    { type: "song", title: "Cantare incheiere", notes: "Text / fonograma / video karaoke" }
   ],
   scoala_sabat: [
-    { type: "song", title: "Cantare deschidere", notes: "Cuvinte + fonograma" },
+    { type: "song", title: "Cantare deschidere", notes: "Text / fonograma / video karaoke" },
     { type: "prayer", title: "Rugaciune", notes: "Moment de rugaciune" },
     { type: "special", title: "Studiu biblic", notes: "Lectie / clasa" },
     { type: "announcements", title: "Anunturi", notes: "Anunturi pentru biserica" }
   ],
   serviciul_divin: [
-    { type: "song", title: "Cantare deschidere", notes: "Cuvinte + fonograma" },
+    { type: "song", title: "Cantare deschidere", notes: "Text / fonograma / video karaoke" },
     { type: "prayer", title: "Rugaciune", notes: "Moment de rugaciune" },
     { type: "announcements", title: "Anunturi", notes: "Anunturi pentru biserica" },
-    { type: "song", title: "Cantare speciala", notes: "Cuvinte + fonograma" },
+    { type: "song", title: "Cantare speciala", notes: "Text / fonograma / video karaoke" },
     { type: "sermon", title: "Predica", notes: "Mesaj / timer" },
-    { type: "song", title: "Cantare finala", notes: "Cuvinte + fonograma" }
+    { type: "song", title: "Cantare finala", notes: "Text / fonograma / video karaoke" }
   ],
   serviciul_seara: [
-    { type: "song", title: "Cantare deschidere", notes: "Cuvinte + fonograma" },
+    { type: "song", title: "Cantare deschidere", notes: "Text / fonograma / video karaoke" },
     { type: "prayer", title: "Rugaciune", notes: "Moment de rugaciune" },
     { type: "sermon", title: "Mesaj", notes: "Predica / devotional" },
     { type: "special", title: "Moment special", notes: "Marturie / muzica" },
-    { type: "song", title: "Cantare finala", notes: "Cuvinte + fonograma" }
+    { type: "song", title: "Cantare finala", notes: "Text / fonograma / video karaoke" }
   ],
   sfanta_cina: [
-    { type: "song", title: "Cantare deschidere", notes: "Cuvinte + fonograma" },
+    { type: "song", title: "Cantare deschidere", notes: "Text / fonograma / video karaoke" },
     { type: "prayer", title: "Rugaciune", notes: "Moment de rugaciune" },
     { type: "sermon", title: "Meditatie", notes: "Mesaj scurt" },
     { type: "special", title: "Sfanta cina", notes: "Moment special" },
-    { type: "song", title: "Cantare finala", notes: "Cuvinte + fonograma" }
+    { type: "song", title: "Cantare finala", notes: "Text / fonograma / video karaoke" }
   ],
   custom: []
 };

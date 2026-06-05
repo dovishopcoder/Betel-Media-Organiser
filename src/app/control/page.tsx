@@ -8,6 +8,18 @@ import type { ProgramItem, Slide } from "@/shared/types";
 
 function slidesForItem(item: ProgramItem | null): Slide[] {
   if (!item) return [];
+  if (item.type === "song" && item.filePath && /\.(mp4|webm|ogg|mov|mkv|avi)$/i.test(item.filePath)) {
+    return [{
+      id: `${item.id}-karaoke-video`,
+      type: "video",
+      title: item.title,
+      label: "karaoke",
+      body: item.notes || item.title,
+      filePath: item.filePath,
+      sortOrder: 0
+    }];
+  }
+
   if (item.type === "song" && item.song) {
     return item.song.displayOrder.map((key, index) => ({
       id: `${item.id}-${key}-${index}`,
@@ -197,7 +209,7 @@ export default function ControlPage() {
     if (!file) return;
     setItemFileStatus((current) => ({
       ...current,
-      [item.id]: kind === "visual" ? "Se copiaza fisierul cu cuvinte..." : "Se copiaza fonograma..."
+      [item.id]: kind === "visual" ? "Se copiaza textul sau video karaoke..." : "Se copiaza fonograma..."
     }));
 
     const response = kind === "visual"
@@ -212,7 +224,7 @@ export default function ControlPage() {
 
     setItemFileStatus((current) => ({
       ...current,
-      [item.id]: kind === "visual" ? "Cuvintele au fost atasate." : "Fonograma a fost atasata."
+      [item.id]: kind === "visual" ? "Textul/video karaoke a fost atasat." : "Fonograma a fost atasata."
     }));
   }
 

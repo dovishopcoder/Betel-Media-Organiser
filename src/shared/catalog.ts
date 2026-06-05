@@ -1,5 +1,5 @@
 export const itemLabels: Record<string, string> = {
-  song: "Cantare",
+  song: "Cantare comuna",
   prayer: "Rugaciune",
   sermon: "Predica",
   presentation: "Prezentare",
@@ -20,7 +20,7 @@ export const serviceTemplates = [
 ];
 
 export const blockTemplates = [
-  { type: "song", title: "Cantare", notes: "Cuvinte + fonograma" },
+  { type: "song", title: "Cantare comuna", notes: "Text din librarie / text + fonograma / video karaoke" },
   { type: "prayer", title: "Rugaciune", notes: "Moment de rugaciune" },
   { type: "sermon", title: "Predica", notes: "Mesaj / timer" },
   { type: "presentation", title: "Prezentare", notes: "PowerPoint / PDF" },
