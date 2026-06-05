@@ -72,13 +72,6 @@ function createSlidesForItem(item) {
     ];
   }
 
-  if (item.type === "song" && item.filePath) {
-    const presentationSlides = extractPresentationSlides(item);
-    if (presentationSlides.length > 0) {
-      return presentationSlides;
-    }
-  }
-
   if (item.type === "song" && item.song) {
     return item.song.displayOrder.map((sectionKey, index) => ({
       id: `${item.id}-${sectionKey}-${index}`,

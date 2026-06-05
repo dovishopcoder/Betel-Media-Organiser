@@ -8,7 +8,7 @@ import type { ProgramItem, Slide } from "@/shared/types";
 
 function slidesForItem(item: ProgramItem | null): Slide[] {
   if (!item) return [];
-  if (item.type === "song" && item.filePath && /\.(mp4|webm|ogg|mov|mkv|avi)$/i.test(item.filePath)) {
+  if (item.type === "song" && item.filePath && isVideoPath(item.filePath)) {
     return [{
       id: `${item.id}-karaoke-video`,
       type: "video",
@@ -41,6 +41,10 @@ function slidesForItem(item: ProgramItem | null): Slide[] {
     filePath: item.filePath || null,
     sortOrder: 0
   }];
+}
+
+function isVideoPath(filePath: string | null | undefined) {
+  return Boolean(filePath && /\.(mp4|webm|ogg|mov|mkv|avi)$/i.test(filePath));
 }
 
 function detectMediaTypeFromFile(file: File): "audio" | "video" | "presentation" | null {
@@ -206,14 +210,14 @@ export default function ControlPage() {
     }
   }
 
-  async function handleProgramItemFileUpload(item: ProgramItem, kind: "visual" | "audio", file: File | null) {
+  async function handleProgramItemFileUpload(item: ProgramItem, kind: "video" | "audio", file: File | null) {
     if (!file) return;
     setItemFileStatus((current) => ({
       ...current,
-      [item.id]: kind === "visual" ? "Se copiaza textul sau video karaoke..." : "Se copiaza fonograma..."
+      [item.id]: kind === "video" ? "Se copiaza video karaoke..." : "Se copiaza fonograma..."
     }));
 
-    const response = kind === "visual"
+    const response = kind === "video"
       ? await api.attachProgramItemVisual(item.id, file)
       : await api.attachProgramItemAudio(item.id, file);
 
@@ -225,8 +229,13 @@ export default function ControlPage() {
 
     setItemFileStatus((current) => ({
       ...current,
-      [item.id]: kind === "visual" ? "Textul/video karaoke a fost atasat." : "Fonograma a fost atasata."
+      [item.id]: kind === "video" ? "Video karaoke a fost atasat si trimis pe ambele ecrane." : "Fonograma a fost atasata."
     }));
+    await refresh();
+    setSelectedItemId(item.id);
+    if (kind === "video") {
+      await api.goLive(item.id, 0, "both");
+    }
   }
 
   async function handleProgramItemSongChange(item: ProgramItem, songId: number | null) {
@@ -418,7 +427,7 @@ export default function ControlPage() {
                   {item.type === "song" ? (
                     <div className="song-block-controls">
                       <label>
-                        <span className="item-type">Cantare</span>
+                        <span className="item-type">Cantare din librarie</span>
                         <select value={item.songId || ""} onChange={(event) => handleProgramItemSongChange(item, event.target.value ? Number(event.target.value) : null)}>
                           <option value="">Alege din librarie</option>
                           {songs.map((song) => (
@@ -428,14 +437,6 @@ export default function ControlPage() {
                       </label>
 
                       <div className="block-file-row">
-                        <label className={`asset-pill ${item.filePath ? "ready" : ""}`}>
-                          Text/karaoke
-                          <input
-                            accept=".ppt,.pptx,.pps,.ppsx,.pdf,video/*,.mp4,.webm,.mov,.mkv,.avi"
-                            type="file"
-                            onChange={(event) => handleProgramItemFileUpload(item, "visual", event.target.files?.[0] || null)}
-                          />
-                        </label>
                         <label className={`asset-pill ${item.audioFilePath ? "ready" : ""}`}>
                           Fonograma
                           <input
@@ -444,17 +445,23 @@ export default function ControlPage() {
                             onChange={(event) => handleProgramItemFileUpload(item, "audio", event.target.files?.[0] || null)}
                           />
                         </label>
+                        <label className={`asset-pill ${isVideoPath(item.filePath) ? "ready" : ""}`}>
+                          Video karaoke
+                          <input
+                            accept="video/*,.mp4,.webm,.mov,.mkv,.avi"
+                            type="file"
+                            onChange={(event) => handleProgramItemFileUpload(item, "video", event.target.files?.[0] || null)}
+                          />
+                        </label>
                       </div>
 
-                      <div className="block-screen-row">
-                        <button onClick={() => api.goLive(item.id, 0, "main")}>Sala</button>
-                        <button onClick={() => api.goLive(item.id, 0, "stage")}>Scena</button>
-                        <button onClick={() => api.goLive(item.id, 0, "both")}>Ambele</button>
-                      </div>
+                      <button className="song-live-btn" onClick={() => api.goLive(item.id, 0, "both")}>
+                        Trimite cantarea pe ambele ecrane
+                      </button>
 
                       <div className="program-asset-status">
                         {itemFileStatus[item.id]
-                          || `${item.song ? item.song.title : "fara cantare"} / ${item.audioFilePath ? "fonograma" : "fara fonograma"} / ${item.filePath ? "text/karaoke" : "fara fisier"}`}
+                          || `${item.song ? item.song.title : "fara cantare"} / ${item.audioFilePath ? "fonograma" : "fara fonograma"} / ${isVideoPath(item.filePath) ? "video karaoke" : "fara video"}`}
                       </div>
                     </div>
                   ) : null}

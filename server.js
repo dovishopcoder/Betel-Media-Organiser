@@ -203,13 +203,13 @@ app.prepare().then(() => {
     try {
       const item = repos.programs.getItem(Number(req.params.itemId));
       if (!item) return res.status(404).json({ error: "Program item not found" });
-      if (item.type !== "song") return res.status(400).json({ error: "Cuvintele pot fi atasate doar la o cantare." });
-      if (!req.file) return res.status(400).json({ error: "Alege fisierul pentru cuvinte." });
+      if (item.type !== "song") return res.status(400).json({ error: "Video karaoke poate fi atasat doar la o cantare." });
+      if (!req.file) return res.status(400).json({ error: "Alege fisierul video karaoke." });
 
       const detectedMediaType = detectMediaType({ fileName: req.file.originalname, mimeType: req.file.mimetype });
-      if (!["presentation", "video"].includes(detectedMediaType) || !isAllowedMedia({ fileName: req.file.originalname, mediaType: detectedMediaType, mimeType: req.file.mimetype })) {
+      if (detectedMediaType !== "video" || !isAllowedMedia({ fileName: req.file.originalname, mediaType: "video", mimeType: req.file.mimetype })) {
         fs.unlinkSync(req.file.path);
-        return res.status(400).json({ error: "Pentru cantare alege PowerPoint/PDF sau video karaoke." });
+        return res.status(400).json({ error: "Pentru cantare alege un fisier video karaoke." });
       }
 
       const updatedItem = repos.programs.attachFile(item.id, {
