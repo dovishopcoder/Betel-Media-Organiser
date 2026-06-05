@@ -141,11 +141,11 @@ export function useLiveMedia() {
         body: JSON.stringify(input)
       });
     },
-    videoControl(target: "main" | "stage" | "both", action: "play" | "pause" | "restart") {
+    videoControl(target: "main" | "stage" | "both", action: "play" | "pause" | "restart" | "seek", seconds?: number) {
       return fetch("/api/live/video-control", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ target, action })
+        body: JSON.stringify({ target, action, seconds })
       });
     },
     createSong(input: { title: string; author?: string; lyrics: string }) {

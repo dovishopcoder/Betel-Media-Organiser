@@ -541,8 +541,14 @@ export default function ControlPage() {
                         ) : null}
                       </div>
 
-                      <button className="song-live-btn" onClick={() => handlePrepareItem(item, "both")}>
-                        Trimite cantarea pe ambele ecrane
+                      <div className="output-target-row block-output-row" aria-label="Alege ecranul pentru bloc">
+                        <button className={selectedItem?.id === item.id && preparedTarget === "main" ? "active" : ""} onClick={() => handlePrepareItem(item, "main")}>Sala</button>
+                        <button className={selectedItem?.id === item.id && preparedTarget === "stage" ? "active" : ""} onClick={() => handlePrepareItem(item, "stage")}>Scena</button>
+                        <button className={selectedItem?.id === item.id && preparedTarget === "both" ? "active" : ""} onClick={() => handlePrepareItem(item, "both")}>Ambele</button>
+                      </div>
+
+                      <button className="song-live-btn" onClick={() => handlePrepareItem(item, selectedItem?.id === item.id ? preparedTarget : "both")}>
+                        Pregateste cantarea
                       </button>
 
                       <div className="program-asset-status">
@@ -572,11 +578,6 @@ export default function ControlPage() {
             <div className="muted">{selectedItem?.notes || "Slide-urile apar aici."}</div>
           </div>
           <div className="go-live-group">
-            <div className="output-target-row" aria-label="Alege ecranul pentru live">
-              <button className={preparedTarget === "main" ? "active" : ""} onClick={() => setPreparedTarget("main")}>Sala</button>
-              <button className={preparedTarget === "stage" ? "active" : ""} onClick={() => setPreparedTarget("stage")}>Scena</button>
-              <button className={preparedTarget === "both" ? "active" : ""} onClick={() => setPreparedTarget("both")}>Ambele</button>
-            </div>
             <button className="primary-btn" onClick={handleGoLive}>
               <Tv size={17} /> Go Live
             </button>
@@ -680,6 +681,15 @@ export default function ControlPage() {
           <section className="video-control-panel">
             <div className="item-type">Control video</div>
             <strong>{activeVideo.title}</strong>
+            <video
+              className="control-video-preview"
+              controls
+              muted
+              src={activeVideo.filePath || ""}
+              onPause={() => api.videoControl(activeVideoTarget, "pause")}
+              onPlay={() => api.videoControl(activeVideoTarget, "play")}
+              onSeeked={(event) => api.videoControl(activeVideoTarget, "seek", event.currentTarget.currentTime)}
+            />
             <div className="video-control-actions">
               <button className="primary-btn" onClick={() => api.videoControl(activeVideoTarget, "play")}>
                 <Play size={16} /> Play
@@ -719,7 +729,6 @@ export default function ControlPage() {
               )}
             </div>
             <div className="screen-actions">
-              <button className="ghost-btn" onClick={() => selectedItem && setPreparedTarget("main")}>Alege sala</button>
               <button className="ghost-btn" onClick={() => api.clear("main")}>Fundal</button>
             </div>
           </section>
@@ -747,7 +756,6 @@ export default function ControlPage() {
               )}
             </div>
             <div className="screen-actions">
-              <button className="ghost-btn" onClick={() => selectedItem && setPreparedTarget("stage")}>Alege scena</button>
               <button className="ghost-btn" onClick={() => api.clear("stage")}>Fundal</button>
             </div>
           </section>

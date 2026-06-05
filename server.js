@@ -417,17 +417,22 @@ app.prepare().then(() => {
   });
 
   expressApp.post("/api/live/video-control", (req, res) => {
-    const { target = "both", action } = req.body || {};
+    const { target = "both", action, seconds } = req.body || {};
     const validTargets = ["main", "stage", "both"];
-    const validActions = ["play", "pause", "restart"];
+    const validActions = ["play", "pause", "restart", "seek"];
 
     if (!validTargets.includes(target) || !validActions.includes(action)) {
       return res.status(400).json({ error: "Comanda video invalida." });
     }
 
+    if (action === "seek" && !Number.isFinite(Number(seconds))) {
+      return res.status(400).json({ error: "Pozitia video este invalida." });
+    }
+
     const command = {
       target,
       action,
+      seconds: action === "seek" ? Number(seconds) : undefined,
       issuedAt: new Date().toISOString()
     };
 

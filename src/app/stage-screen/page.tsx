@@ -6,7 +6,8 @@ import { getLiveMediaSocket, useLiveMedia } from "@/hooks/useLiveMedia";
 
 type VideoCommand = {
   target: "main" | "stage" | "both";
-  action: "play" | "pause" | "restart";
+  action: "play" | "pause" | "restart" | "seek";
+  seconds?: number;
 };
 
 export default function StageScreenPage() {
@@ -34,6 +35,11 @@ export default function StageScreenPage() {
 
       if (command.action === "pause") {
         video.pause();
+        return;
+      }
+
+      if (command.action === "seek") {
+        video.currentTime = Math.max(0, Number(command.seconds || 0));
         return;
       }
 
