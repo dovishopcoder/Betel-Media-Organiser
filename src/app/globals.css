@@ -156,6 +156,51 @@ button:disabled {
   grid-template-columns: 1fr 1fr;
 }
 
+.control-template-preview {
+  display: grid;
+  gap: 8px;
+}
+
+.control-template-list {
+  display: grid;
+  gap: 6px;
+}
+
+.control-template-block {
+  align-items: center;
+  border: 1px solid #e8ecef;
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 24px 1fr;
+  min-height: 42px;
+  padding: 7px 8px;
+}
+
+.control-template-block > span {
+  align-items: center;
+  background: #f2f4f6;
+  border-radius: 999px;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 11px;
+  height: 22px;
+  justify-content: center;
+  width: 22px;
+}
+
+.control-template-block strong {
+  display: block;
+  font-size: 13px;
+}
+
+.control-template-block small {
+  color: var(--muted);
+  display: block;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
 .live-panel {
   border-left: 1px solid var(--line);
 }
