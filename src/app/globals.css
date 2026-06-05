@@ -249,6 +249,12 @@ button:disabled {
   width: 100%;
 }
 
+.song-block-controls select:disabled {
+  background: #f3f5f6;
+  color: #7b8794;
+  cursor: not-allowed;
+}
+
 .block-file-row,
 .block-screen-row {
   display: grid;
@@ -282,6 +288,36 @@ button:disabled {
   font-weight: 700;
   min-height: 34px;
   width: 100%;
+}
+
+.asset-clear-row {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.clear-asset-btn {
+  background: #fff;
+  border: 1px solid #d7e2df;
+  border-radius: 6px;
+  color: #6b1f17;
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 30px;
+}
+
+.asset-pill.locked {
+  background: #f3f5f6;
+  border-color: #d7dde3;
+  color: #8a95a1;
+  cursor: not-allowed;
+}
+
+.asset-pill.locked::after {
+  content: "blocat";
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .live-panel {

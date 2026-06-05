@@ -252,6 +252,43 @@ export default function ControlPage() {
     setItemFileStatus((current) => ({ ...current, [item.id]: "Cantarea a fost aleasa." }));
   }
 
+  async function handleClearProgramItemSong(item: ProgramItem) {
+    setItemFileStatus((current) => ({ ...current, [item.id]: "Se sterge cantarea..." }));
+    const response = await api.updateProgramItem(item.id, { songId: null });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: "Nu s-a putut sterge cantarea." }));
+      setItemFileStatus((current) => ({ ...current, [item.id]: error.error }));
+      return;
+    }
+
+    await refresh();
+    setSelectedItemId(item.id);
+    setItemFileStatus((current) => ({ ...current, [item.id]: "Cantarea a fost stearsa." }));
+  }
+
+  async function handleClearProgramItemAsset(item: ProgramItem, kind: "video" | "audio") {
+    setItemFileStatus((current) => ({
+      ...current,
+      [item.id]: kind === "video" ? "Se sterge video karaoke..." : "Se sterge fonograma..."
+    }));
+    const response = kind === "video"
+      ? await api.clearProgramItemVisual(item.id)
+      : await api.clearProgramItemAudio(item.id);
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: "Nu s-a putut sterge fisierul." }));
+      setItemFileStatus((current) => ({ ...current, [item.id]: error.error }));
+      return;
+    }
+
+    await refresh();
+    setSelectedItemId(item.id);
+    setItemFileStatus((current) => ({
+      ...current,
+      [item.id]: kind === "video" ? "Video karaoke a fost sters." : "Fonograma a fost stearsa."
+    }));
+  }
+
   async function handleCreateService(serviceType: string, title: string) {
     setServiceStatus(`Se creeaza ${title}...`);
     const today = new Date().toISOString().slice(0, 10);
@@ -426,33 +463,65 @@ export default function ControlPage() {
 
                   {item.type === "song" ? (
                     <div className="song-block-controls">
+                      {(() => {
+                        const hasSong = Boolean(item.songId);
+                        const hasAudio = Boolean(item.audioFilePath);
+                        const hasVideo = isVideoPath(item.filePath);
+                        const textModeLocked = hasVideo;
+                        const videoModeLocked = hasSong || hasAudio;
+
+                        return (
+                          <>
                       <label>
                         <span className="item-type">Cantare din librarie</span>
-                        <select value={item.songId || ""} onChange={(event) => handleProgramItemSongChange(item, event.target.value ? Number(event.target.value) : null)}>
+                        <select
+                          disabled={textModeLocked}
+                          value={item.songId || ""}
+                          onChange={(event) => handleProgramItemSongChange(item, event.target.value ? Number(event.target.value) : null)}
+                        >
                           <option value="">Alege din librarie</option>
                           {songs.map((song) => (
                             <option key={song.id} value={song.id}>{song.title}</option>
                           ))}
                         </select>
                       </label>
+                      {hasSong ? (
+                        <button className="clear-asset-btn" onClick={() => handleClearProgramItemSong(item)}>
+                          Sterge cantarea
+                        </button>
+                      ) : null}
 
                       <div className="block-file-row">
-                        <label className={`asset-pill ${item.audioFilePath ? "ready" : ""}`}>
+                        <label className={`asset-pill ${hasAudio ? "ready" : ""} ${textModeLocked ? "locked" : ""}`}>
                           Fonograma
                           <input
                             accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac"
+                            disabled={textModeLocked}
                             type="file"
                             onChange={(event) => handleProgramItemFileUpload(item, "audio", event.target.files?.[0] || null)}
                           />
                         </label>
-                        <label className={`asset-pill ${isVideoPath(item.filePath) ? "ready" : ""}`}>
+                        <label className={`asset-pill ${hasVideo ? "ready" : ""} ${videoModeLocked ? "locked" : ""}`}>
                           Video karaoke
                           <input
                             accept="video/*,.mp4,.webm,.mov,.mkv,.avi"
+                            disabled={videoModeLocked}
                             type="file"
                             onChange={(event) => handleProgramItemFileUpload(item, "video", event.target.files?.[0] || null)}
                           />
                         </label>
+                      </div>
+                      <div className="asset-clear-row">
+                        {hasAudio ? (
+                          <button className="clear-asset-btn" onClick={() => handleClearProgramItemAsset(item, "audio")}>
+                            Sterge fonograma
+                          </button>
+                        ) : null}
+                        {hasVideo ? (
+                          <button className="clear-asset-btn" onClick={() => handleClearProgramItemAsset(item, "video")}>
+                            Sterge video
+                          </button>
+                        ) : null}
                       </div>
 
                       <button className="song-live-btn" onClick={() => api.goLive(item.id, 0, "both")}>
@@ -461,8 +530,13 @@ export default function ControlPage() {
 
                       <div className="program-asset-status">
                         {itemFileStatus[item.id]
-                          || `${item.song ? item.song.title : "fara cantare"} / ${item.audioFilePath ? "fonograma" : "fara fonograma"} / ${isVideoPath(item.filePath) ? "video karaoke" : "fara video"}`}
+                          || (hasVideo
+                            ? "Mod video karaoke: cantarea si fonograma sunt blocate."
+                            : `${item.song ? item.song.title : "fara cantare"} / ${hasAudio ? "fonograma" : "fara fonograma"} / video blocat dupa alegerea cantarii sau fonogramei`)}
                       </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   ) : null}
                 </article>

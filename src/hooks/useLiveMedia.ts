@@ -124,6 +124,16 @@ export function useLiveMedia() {
         body: formData
       });
     },
+    clearProgramItemAudio(itemId: number) {
+      return fetch(`/api/program-items/${itemId}/audio`, {
+        method: "DELETE"
+      });
+    },
+    clearProgramItemVisual(itemId: number) {
+      return fetch(`/api/program-items/${itemId}/visual`, {
+        method: "DELETE"
+      });
+    },
     updateProgramItem(itemId: number, input: { title?: string; songId?: number | null; notes?: string }) {
       return fetch(`/api/program-items/${itemId}`, {
         method: "PATCH",

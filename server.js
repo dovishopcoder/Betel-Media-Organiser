@@ -199,6 +199,16 @@ app.prepare().then(() => {
     }
   });
 
+  expressApp.delete("/api/program-items/:itemId/audio", (req, res) => {
+    const item = repos.programs.getItem(Number(req.params.itemId));
+    if (!item) return res.status(404).json({ error: "Program item not found" });
+    if (item.type !== "song") return res.status(400).json({ error: "Fonograma poate fi stearsa doar de la o cantare." });
+
+    const updatedItem = repos.programs.clearAudio(item.id);
+    refreshLiveProgramItem(updatedItem);
+    res.json({ item: updatedItem, program: liveState.programOrder });
+  });
+
   expressApp.post("/api/program-items/:itemId/visual", mediaUpload.single("file"), (req, res) => {
     try {
       const item = repos.programs.getItem(Number(req.params.itemId));
@@ -223,6 +233,16 @@ app.prepare().then(() => {
       }
       res.status(400).json({ error: error.message });
     }
+  });
+
+  expressApp.delete("/api/program-items/:itemId/visual", (req, res) => {
+    const item = repos.programs.getItem(Number(req.params.itemId));
+    if (!item) return res.status(404).json({ error: "Program item not found" });
+    if (item.type !== "song") return res.status(400).json({ error: "Video karaoke poate fi sters doar de la o cantare." });
+
+    const updatedItem = repos.programs.clearFile(item.id);
+    refreshLiveProgramItem(updatedItem);
+    res.json({ item: updatedItem, program: liveState.programOrder });
   });
 
   expressApp.post("/api/media/program-item", (req, res) => {

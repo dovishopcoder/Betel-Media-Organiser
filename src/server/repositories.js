@@ -211,16 +211,20 @@ function createRepositories(db) {
     updateItem(itemId, input) {
       const existing = programs.getItem(itemId);
       if (!existing) return null;
+      const nextSongId = input.songId === undefined ? existing.songId || null : input.songId || null;
+      const shouldClearVideo = input.songId !== undefined && nextSongId !== null;
 
       db.prepare(`
         UPDATE program_items
-        SET title = ?,
+        SET file_path = CASE WHEN ? THEN NULL ELSE file_path END,
+            title = ?,
             song_id = ?,
             notes = ?
         WHERE id = ?
       `).run(
+        shouldClearVideo ? 1 : 0,
         input.title ?? existing.title,
-        input.songId === undefined ? existing.songId || null : input.songId || null,
+        nextSongId,
         input.notes ?? existing.notes ?? "",
         itemId
       );
@@ -246,7 +250,9 @@ function createRepositories(db) {
     attachFile(itemId, input) {
       db.prepare(`
         UPDATE program_items
-        SET file_path = ?
+        SET file_path = ?,
+            song_id = NULL,
+            audio_file_path = NULL
         WHERE id = ?
       `).run(input.filePath || null, itemId);
       return programs.getItem(itemId);
@@ -254,9 +260,26 @@ function createRepositories(db) {
     attachAudio(itemId, input) {
       db.prepare(`
         UPDATE program_items
-        SET audio_file_path = ?
+        SET file_path = NULL,
+            audio_file_path = ?
         WHERE id = ?
       `).run(input.filePath || null, itemId);
+      return programs.getItem(itemId);
+    },
+    clearFile(itemId) {
+      db.prepare(`
+        UPDATE program_items
+        SET file_path = NULL
+        WHERE id = ?
+      `).run(itemId);
+      return programs.getItem(itemId);
+    },
+    clearAudio(itemId) {
+      db.prepare(`
+        UPDATE program_items
+        SET audio_file_path = NULL
+        WHERE id = ?
+      `).run(itemId);
       return programs.getItem(itemId);
     }
   };
