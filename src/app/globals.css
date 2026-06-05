@@ -150,6 +150,21 @@ button:disabled {
   font-size: 13px;
 }
 
+.sync-template-btn {
+  background: transparent;
+  border-color: #d7e2df;
+  border-radius: 6px;
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 32px;
+}
+
+.sync-template-btn:hover {
+  background: #eef6f3;
+  border-color: #bfd8d0;
+}
+
 .confirm-actions {
   display: grid;
   gap: 6px;

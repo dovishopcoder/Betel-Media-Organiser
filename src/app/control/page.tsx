@@ -63,6 +63,7 @@ export default function ControlPage() {
   const [selectedServiceType, setSelectedServiceType] = useState("serviciul_divin");
   const [pendingServiceType, setPendingServiceType] = useState("");
   const [servicePickerOpen, setServicePickerOpen] = useState(false);
+  const [syncTemplateConfirmOpen, setSyncTemplateConfirmOpen] = useState(false);
   const [backgroundStatus, setBackgroundStatus] = useState("");
   const [serviceStatus, setServiceStatus] = useState("");
   const [builderStatus, setBuilderStatus] = useState("");
@@ -264,13 +265,21 @@ export default function ControlPage() {
 
   function handleServiceTemplateChange(serviceType: string) {
     setPendingServiceType(serviceType);
+    setSyncTemplateConfirmOpen(false);
     setServiceStatus("");
   }
 
   async function handleConfirmServiceTemplate() {
     if (!pendingService) return;
     setServicePickerOpen(false);
+    setSyncTemplateConfirmOpen(false);
     await handleCreateService(pendingService.type, pendingService.title);
+  }
+
+  async function handleSyncCurrentTemplate() {
+    setSyncTemplateConfirmOpen(false);
+    setServicePickerOpen(false);
+    await handleCreateService(selectedService.type, selectedService.title);
   }
 
   async function handleAddBlock(template: typeof blockTemplates[number]) {
@@ -372,6 +381,22 @@ export default function ControlPage() {
                 }}>Renunta</button>
               </div>
             </div>
+          ) : null}
+          {pendingServiceType === selectedServiceType ? (
+            syncTemplateConfirmOpen ? (
+              <div className="service-confirm-box">
+                <strong>Aplici template-ul?</strong>
+                <div className="muted">Programul activ va fi recreat din template-ul {selectedService.title}. Modificarile din programul activ vor fi inlocuite.</div>
+                <div className="confirm-actions">
+                  <button className="primary-btn" onClick={handleSyncCurrentTemplate}>Confirma</button>
+                  <button className="ghost-btn" onClick={() => setSyncTemplateConfirmOpen(false)}>Renunta</button>
+                </div>
+              </div>
+            ) : (
+              <button className="sync-template-btn" onClick={() => setSyncTemplateConfirmOpen(true)}>
+                Aplica template
+              </button>
+            )
           ) : null}
           {serviceStatus ? <div className="muted">{serviceStatus}</div> : null}
         </section>
