@@ -50,6 +50,7 @@ export default function ControlPage() {
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [selectedServiceType, setSelectedServiceType] = useState("serviciul_divin");
   const [pendingServiceType, setPendingServiceType] = useState("");
+  const [servicePickerOpen, setServicePickerOpen] = useState(false);
   const [backgroundStatus, setBackgroundStatus] = useState("");
   const [serviceStatus, setServiceStatus] = useState("");
   const [builderStatus, setBuilderStatus] = useState("");
@@ -242,6 +243,7 @@ export default function ControlPage() {
 
   async function handleConfirmServiceTemplate() {
     if (!pendingService) return;
+    setServicePickerOpen(false);
     await handleCreateService(pendingService.type, pendingService.title);
   }
 
@@ -314,27 +316,38 @@ export default function ControlPage() {
           <h1 className="title">Program</h1>
           <a className="muted" href="/settings">Setari</a>
         </div>
-        <section className="control-service-picker">
-          <label>
-            <span className="item-type">Template serviciu</span>
-            <select value={pendingServiceType || selectedServiceType} onChange={(event) => handleServiceTemplateChange(event.target.value)}>
-              {serviceTemplates.map((service) => (
-                <option key={service.type} value={service.type}>{service.title}</option>
-              ))}
-            </select>
-          </label>
+        <section className={`control-service-picker ${servicePickerOpen || pendingServiceType !== selectedServiceType ? "open" : ""}`}>
+          <button className="service-compact-btn" onClick={() => setServicePickerOpen((value) => !value)}>
+            <span>
+              <span className="item-type">Serviciu</span>
+              <strong>{selectedService.title}</strong>
+            </span>
+            <span>{servicePickerOpen ? "Inchide" : "Schimba"}</span>
+          </button>
+          {servicePickerOpen || pendingServiceType !== selectedServiceType ? (
+            <label>
+              <span className="item-type">Alege template</span>
+              <select value={pendingServiceType || selectedServiceType} onChange={(event) => handleServiceTemplateChange(event.target.value)}>
+                {serviceTemplates.map((service) => (
+                  <option key={service.type} value={service.type}>{service.title}</option>
+                ))}
+              </select>
+            </label>
+          ) : null}
           {pendingServiceType !== selectedServiceType ? (
             <div className="service-confirm-box">
               <strong>Schimbi programul curent?</strong>
               <div className="muted">Aceasta va crea program nou din template-ul {pendingService?.title} si va inlocui programul curent.</div>
               <div className="confirm-actions">
                 <button className="primary-btn" onClick={handleConfirmServiceTemplate}>Confirma</button>
-                <button className="ghost-btn" onClick={() => setPendingServiceType(selectedServiceType)}>Renunta</button>
+                <button className="ghost-btn" onClick={() => {
+                  setPendingServiceType(selectedServiceType);
+                  setServicePickerOpen(false);
+                }}>Renunta</button>
               </div>
             </div>
-          ) : (
-            <div className="muted">{serviceStatus || `${selectedService.title} este selectat.`}</div>
-          )}
+          ) : null}
+          {serviceStatus ? <div className="muted">{serviceStatus}</div> : null}
         </section>
         <div className="sidebar-empty-state">
           <div className="item-type">Coloana stanga</div>
