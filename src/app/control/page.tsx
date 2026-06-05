@@ -46,7 +46,7 @@ function detectMediaTypeFromFile(file: File): "audio" | "video" | "presentation"
 }
 
 export default function ControlPage() {
-  const { program, background, liveState, loading, refresh, api } = useLiveMedia();
+  const { program, background, serviceProgramTemplates, liveState, loading, refresh, api } = useLiveMedia();
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [selectedServiceType, setSelectedServiceType] = useState("serviciul_divin");
   const [pendingServiceType, setPendingServiceType] = useState("");
@@ -69,6 +69,8 @@ export default function ControlPage() {
   }, [program, selectedItemId, liveState]);
   const selectedService = serviceTemplates.find((service) => service.type === selectedServiceType) || serviceTemplates[0];
   const pendingService = serviceTemplates.find((service) => service.type === pendingServiceType) || null;
+  const visibleServiceType = pendingServiceType || selectedServiceType;
+  const visibleTemplateItems = serviceProgramTemplates[visibleServiceType] || [];
   const fallbackSlides = useMemo(() => slidesForItem(selectedItem), [selectedItem]);
   const selectedSlides = serverSlides || fallbackSlides;
   const mainOutput = liveState?.outputs?.main || liveState;
@@ -348,6 +350,22 @@ export default function ControlPage() {
             </div>
           ) : null}
           {serviceStatus ? <div className="muted">{serviceStatus}</div> : null}
+        </section>
+        <section className="control-template-preview">
+          <div className="item-type">Template program</div>
+          <div className="control-template-list">
+            {visibleTemplateItems.length ? (
+              visibleTemplateItems.map((item, index) => (
+                <div className="control-template-item" key={`${item.type}-${item.title}-${index}`}>
+                  <span>{index + 1}</span>
+                  <strong>{item.title}</strong>
+                  <small>{itemLabels[item.type] || item.type}</small>
+                </div>
+              ))
+            ) : (
+              <div className="empty-state">Acest template nu are blocuri.</div>
+            )}
+          </div>
         </section>
       </aside>
 
