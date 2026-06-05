@@ -215,6 +215,24 @@ function createRepositories(db) {
       );
       return programs.getItem(result.lastInsertRowid);
     },
+    updateItem(itemId, input) {
+      const existing = programs.getItem(itemId);
+      if (!existing) return null;
+
+      db.prepare(`
+        UPDATE program_items
+        SET title = ?,
+            song_id = ?,
+            notes = ?
+        WHERE id = ?
+      `).run(
+        input.title ?? existing.title,
+        input.songId === undefined ? existing.songId || null : input.songId || null,
+        input.notes ?? existing.notes ?? "",
+        itemId
+      );
+      return programs.getItem(itemId);
+    },
     reorderItems(programId, itemIds) {
       const ids = Array.isArray(itemIds) ? itemIds.map(Number).filter(Boolean) : [];
       if (ids.length === 0) return programs.getActiveWithItems();

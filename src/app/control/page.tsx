@@ -58,7 +58,7 @@ function detectMediaTypeFromFile(file: File): "audio" | "video" | "presentation"
 }
 
 export default function ControlPage() {
-  const { program, background, serviceProgramTemplates, liveState, loading, refresh, api } = useLiveMedia();
+  const { songs, program, background, liveState, loading, refresh, api } = useLiveMedia();
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [selectedServiceType, setSelectedServiceType] = useState("serviciul_divin");
   const [pendingServiceType, setPendingServiceType] = useState("");
@@ -81,8 +81,6 @@ export default function ControlPage() {
   }, [program, selectedItemId, liveState]);
   const selectedService = serviceTemplates.find((service) => service.type === selectedServiceType) || serviceTemplates[0];
   const pendingService = serviceTemplates.find((service) => service.type === pendingServiceType) || null;
-  const visibleServiceType = pendingServiceType || selectedServiceType;
-  const visibleTemplateItems = serviceProgramTemplates[visibleServiceType] || [];
   const fallbackSlides = useMemo(() => slidesForItem(selectedItem), [selectedItem]);
   const selectedSlides = serverSlides || fallbackSlides;
   const mainOutput = liveState?.outputs?.main || liveState;
@@ -230,6 +228,20 @@ export default function ControlPage() {
     }));
   }
 
+  async function handleProgramItemSongChange(item: ProgramItem, songId: number | null) {
+    setItemFileStatus((current) => ({ ...current, [item.id]: "Se salveaza cantarea..." }));
+    const response = await api.updateProgramItem(item.id, { songId });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: "Nu s-a putut salva cantarea." }));
+      setItemFileStatus((current) => ({ ...current, [item.id]: error.error }));
+      return;
+    }
+
+    await refresh();
+    setSelectedItemId(item.id);
+    setItemFileStatus((current) => ({ ...current, [item.id]: "Cantarea a fost aleasa." }));
+  }
+
   async function handleCreateService(serviceType: string, title: string) {
     setServiceStatus(`Se creeaza ${title}...`);
     const today = new Date().toISOString().slice(0, 10);
@@ -364,21 +376,67 @@ export default function ControlPage() {
           {serviceStatus ? <div className="muted">{serviceStatus}</div> : null}
         </section>
 
-        <section className="control-template-preview">
-          <div className="item-type">Blocuri template</div>
-          <div className="control-template-list">
-            {visibleTemplateItems.length ? (
-              visibleTemplateItems.map((item, index) => (
-                <div className="control-template-block" key={`${item.type}-${item.title}-${index}`}>
-                  <span>{index + 1}</span>
-                  <div>
-                    <strong>{item.title}</strong>
-                    <small>{itemLabels[item.type] || item.type}</small>
-                  </div>
-                </div>
+        <section className="control-program-blocks">
+          <div className="item-type">Blocuri program</div>
+          <div className="control-block-list">
+            {program?.items?.length ? (
+              program.items.map((item, index) => (
+                <article className={`control-program-block ${selectedItem?.id === item.id ? "active" : ""}`} key={item.id}>
+                  <button className="block-head" onClick={() => setSelectedItemId(item.id)}>
+                    <span>{index + 1}</span>
+                    <div>
+                      <strong>{item.title}</strong>
+                      <small>{itemLabels[item.type] || item.type}</small>
+                    </div>
+                  </button>
+
+                  {item.type === "song" ? (
+                    <div className="song-block-controls">
+                      <label>
+                        <span className="item-type">Cantare</span>
+                        <select value={item.songId || ""} onChange={(event) => handleProgramItemSongChange(item, event.target.value ? Number(event.target.value) : null)}>
+                          <option value="">Alege din librarie</option>
+                          {songs.map((song) => (
+                            <option key={song.id} value={song.id}>{song.title}</option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <div className="block-file-row">
+                        <label className={`asset-pill ${item.filePath ? "ready" : ""}`}>
+                          Text/karaoke
+                          <input
+                            accept=".ppt,.pptx,.pps,.ppsx,.pdf,video/*,.mp4,.webm,.mov,.mkv,.avi"
+                            type="file"
+                            onChange={(event) => handleProgramItemFileUpload(item, "visual", event.target.files?.[0] || null)}
+                          />
+                        </label>
+                        <label className={`asset-pill ${item.audioFilePath ? "ready" : ""}`}>
+                          Fonograma
+                          <input
+                            accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac"
+                            type="file"
+                            onChange={(event) => handleProgramItemFileUpload(item, "audio", event.target.files?.[0] || null)}
+                          />
+                        </label>
+                      </div>
+
+                      <div className="block-screen-row">
+                        <button onClick={() => api.goLive(item.id, 0, "main")}>Sala</button>
+                        <button onClick={() => api.goLive(item.id, 0, "stage")}>Scena</button>
+                        <button onClick={() => api.goLive(item.id, 0, "both")}>Ambele</button>
+                      </div>
+
+                      <div className="program-asset-status">
+                        {itemFileStatus[item.id]
+                          || `${item.song ? item.song.title : "fara cantare"} / ${item.audioFilePath ? "fonograma" : "fara fonograma"} / ${item.filePath ? "text/karaoke" : "fara fisier"}`}
+                      </div>
+                    </div>
+                  ) : null}
+                </article>
               ))
             ) : (
-              <div className="empty-state">Acest template nu are blocuri definite.</div>
+              <div className="empty-state">Programul curent nu are blocuri.</div>
             )}
           </div>
         </section>

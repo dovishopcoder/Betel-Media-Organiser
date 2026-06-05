@@ -124,6 +124,13 @@ export function useLiveMedia() {
         body: formData
       });
     },
+    updateProgramItem(itemId: number, input: { title?: string; songId?: number | null; notes?: string }) {
+      return fetch(`/api/program-items/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input)
+      });
+    },
     videoControl(target: "main" | "stage" | "both", action: "play" | "pause" | "restart") {
       return fetch("/api/live/video-control", {
         method: "POST",

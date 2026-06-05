@@ -166,6 +166,14 @@ app.prepare().then(() => {
     res.json({ slides: repos.slides.forProgramItem(item) });
   });
 
+  expressApp.patch("/api/program-items/:itemId", (req, res) => {
+    const updatedItem = repos.programs.updateItem(Number(req.params.itemId), req.body || {});
+    if (!updatedItem) return res.status(404).json({ error: "Program item not found" });
+
+    refreshLiveProgramItem(updatedItem);
+    res.json({ item: updatedItem, program: liveState.programOrder });
+  });
+
   expressApp.post("/api/program-items/:itemId/audio", mediaUpload.single("file"), (req, res) => {
     try {
       const item = repos.programs.getItem(Number(req.params.itemId));
