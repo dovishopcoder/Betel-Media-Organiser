@@ -44,6 +44,15 @@ app.prepare().then(() => {
   const repos = createRepositories(db);
   let liveState = createInitialLiveState(repos);
 
+  function refreshProgramOrder() {
+    liveState = {
+      ...liveState,
+      programOrder: repos.programs.getActiveWithItems(),
+      updatedAt: new Date().toISOString()
+    };
+    io.emit("program:update", liveState.programOrder);
+  }
+
   function refreshLiveProgramItem(updatedItem) {
     const refreshOutput = (output) => {
       if (!output?.currentItem || output.currentItem.id !== updatedItem.id) return output;
@@ -170,7 +179,7 @@ app.prepare().then(() => {
     const updatedItem = repos.programs.updateItem(Number(req.params.itemId), req.body || {});
     if (!updatedItem) return res.status(404).json({ error: "Program item not found" });
 
-    refreshLiveProgramItem(updatedItem);
+    refreshProgramOrder();
     res.json({ item: updatedItem, program: liveState.programOrder });
   });
 
@@ -189,7 +198,7 @@ app.prepare().then(() => {
       const updatedItem = repos.programs.attachAudio(item.id, {
         filePath: `/media/library/${req.file.filename}`
       });
-      refreshLiveProgramItem(updatedItem);
+      refreshProgramOrder();
       res.json({ item: updatedItem, program: liveState.programOrder });
     } catch (error) {
       if (req.file?.path && fs.existsSync(req.file.path)) {
@@ -205,7 +214,7 @@ app.prepare().then(() => {
     if (item.type !== "song") return res.status(400).json({ error: "Fonograma poate fi stearsa doar de la o cantare." });
 
     const updatedItem = repos.programs.clearAudio(item.id);
-    refreshLiveProgramItem(updatedItem);
+    refreshProgramOrder();
     res.json({ item: updatedItem, program: liveState.programOrder });
   });
 
@@ -225,7 +234,7 @@ app.prepare().then(() => {
       const updatedItem = repos.programs.attachFile(item.id, {
         filePath: `/media/library/${req.file.filename}`
       });
-      refreshLiveProgramItem(updatedItem);
+      refreshProgramOrder();
       res.json({ item: updatedItem, program: liveState.programOrder });
     } catch (error) {
       if (req.file?.path && fs.existsSync(req.file.path)) {
@@ -241,7 +250,7 @@ app.prepare().then(() => {
     if (item.type !== "song") return res.status(400).json({ error: "Video karaoke poate fi sters doar de la o cantare." });
 
     const updatedItem = repos.programs.clearFile(item.id);
-    refreshLiveProgramItem(updatedItem);
+    refreshProgramOrder();
     res.json({ item: updatedItem, program: liveState.programOrder });
   });
 
