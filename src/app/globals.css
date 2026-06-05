@@ -612,6 +612,39 @@ button:disabled {
   background: transparent;
 }
 
+.go-live-group {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.output-target-row {
+  background: #f3f6f5;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  display: grid;
+  gap: 3px;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 3px;
+}
+
+.output-target-row button {
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 30px;
+  padding: 0 8px;
+}
+
+.output-target-row button.active {
+  background: #fff;
+  color: var(--accent-strong);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
 .slide-grid {
   display: grid;
   gap: 10px;
@@ -626,6 +659,10 @@ button:disabled {
 
 .slide-tile.active {
   outline: 3px solid var(--accent);
+}
+
+.slide-tile.prepared:not(.active) {
+  outline: 3px solid #c68a19;
 }
 
 .slide-body-preview {

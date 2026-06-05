@@ -6,6 +6,8 @@ import { useLiveMedia } from "@/hooks/useLiveMedia";
 import { blockTemplates, itemLabels, serviceTemplates } from "@/shared/catalog";
 import type { ProgramItem, Slide } from "@/shared/types";
 
+type OutputTarget = "main" | "stage" | "both";
+
 function slidesForItem(item: ProgramItem | null): Slide[] {
   if (!item) return [];
   if (item.type === "song" && item.filePath && isVideoPath(item.filePath)) {
@@ -79,6 +81,8 @@ export default function ControlPage() {
   const [itemFileStatus, setItemFileStatus] = useState<Record<number, string>>({});
   const [draggedItemId, setDraggedItemId] = useState<number | null>(null);
   const [dropTargetId, setDropTargetId] = useState<number | null>(null);
+  const [preparedSlideIndex, setPreparedSlideIndex] = useState(0);
+  const [preparedTarget, setPreparedTarget] = useState<OutputTarget>("both");
 
   const selectedItem = useMemo(() => {
     const items = program?.items || [];
@@ -134,6 +138,7 @@ export default function ControlPage() {
   useEffect(() => {
     let mounted = true;
     setServerSlides(null);
+    setPreparedSlideIndex(0);
 
     if (!selectedItem) return;
 
@@ -229,13 +234,25 @@ export default function ControlPage() {
 
     setItemFileStatus((current) => ({
       ...current,
-      [item.id]: kind === "video" ? "Video karaoke a fost atasat si trimis pe ambele ecrane." : "Fonograma a fost atasata."
+      [item.id]: kind === "video" ? "Video karaoke a fost atasat. Apasa Go Live cand esti gata." : "Fonograma a fost atasata."
     }));
     await refresh();
     setSelectedItemId(item.id);
-    if (kind === "video") {
-      await api.goLive(item.id, 0, "both");
-    }
+  }
+
+  function handlePrepareItem(item: ProgramItem, target: OutputTarget = "both") {
+    setSelectedItemId(item.id);
+    setPreparedSlideIndex(0);
+    setPreparedTarget(target);
+    setItemFileStatus((current) => ({
+      ...current,
+      [item.id]: target === "both" ? "Pregatit pentru ambele ecrane. Apasa Go Live." : `Pregatit pentru ${target === "main" ? "sala" : "scena"}. Apasa Go Live.`
+    }));
+  }
+
+  async function handleGoLive() {
+    if (!selectedItem) return;
+    await api.goLive(selectedItem.id, preparedSlideIndex, preparedTarget);
   }
 
   async function handleProgramItemSongChange(item: ProgramItem, songId: number | null) {
@@ -524,7 +541,7 @@ export default function ControlPage() {
                         ) : null}
                       </div>
 
-                      <button className="song-live-btn" onClick={() => api.goLive(item.id, 0, "both")}>
+                      <button className="song-live-btn" onClick={() => handlePrepareItem(item, "both")}>
                         Trimite cantarea pe ambele ecrane
                       </button>
 
@@ -554,9 +571,16 @@ export default function ControlPage() {
             <h2 className="title">{selectedItem?.title || "Selecteaza un element"}</h2>
             <div className="muted">{selectedItem?.notes || "Slide-urile apar aici."}</div>
           </div>
-          <button className="primary-btn" onClick={() => selectedItem && api.goLive(selectedItem.id, 0, "both")}>
-            <Tv size={17} /> Go Live ambele
-          </button>
+          <div className="go-live-group">
+            <div className="output-target-row" aria-label="Alege ecranul pentru live">
+              <button className={preparedTarget === "main" ? "active" : ""} onClick={() => setPreparedTarget("main")}>Sala</button>
+              <button className={preparedTarget === "stage" ? "active" : ""} onClick={() => setPreparedTarget("stage")}>Scena</button>
+              <button className={preparedTarget === "both" ? "active" : ""} onClick={() => setPreparedTarget("both")}>Ambele</button>
+            </div>
+            <button className="primary-btn" onClick={handleGoLive}>
+              <Tv size={17} /> Go Live
+            </button>
+          </div>
         </div>
 
         <div className="toolbar">
@@ -574,9 +598,9 @@ export default function ControlPage() {
         <div className="slide-grid">
           {selectedSlides.map((slide, index) => (
             <button
-              className={`slide-tile ${liveState?.currentItem?.id === selectedItem?.id && liveState.currentSlideIndex === index ? "active" : ""}`}
+              className={`slide-tile ${liveState?.currentItem?.id === selectedItem?.id && liveState.currentSlideIndex === index ? "active" : ""} ${preparedSlideIndex === index ? "prepared" : ""}`}
               key={slide.id}
-              onClick={() => selectedItem && api.goLive(selectedItem.id, index, "both")}
+              onClick={() => setPreparedSlideIndex(index)}
             >
               {slide.type === "presentation" && slide.filePath ? (
                 <img className="slide-image-preview" src={slide.filePath} alt={slide.body || slide.title} />
@@ -695,7 +719,7 @@ export default function ControlPage() {
               )}
             </div>
             <div className="screen-actions">
-              <button className="ghost-btn" onClick={() => selectedItem && api.goLive(selectedItem.id, 0, "main")}>Trimite selectia</button>
+              <button className="ghost-btn" onClick={() => selectedItem && setPreparedTarget("main")}>Alege sala</button>
               <button className="ghost-btn" onClick={() => api.clear("main")}>Fundal</button>
             </div>
           </section>
@@ -723,7 +747,7 @@ export default function ControlPage() {
               )}
             </div>
             <div className="screen-actions">
-              <button className="ghost-btn" onClick={() => selectedItem && api.goLive(selectedItem.id, 0, "stage")}>Trimite selectia</button>
+              <button className="ghost-btn" onClick={() => selectedItem && setPreparedTarget("stage")}>Alege scena</button>
               <button className="ghost-btn" onClick={() => api.clear("stage")}>Fundal</button>
             </div>
           </section>
