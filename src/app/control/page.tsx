@@ -134,7 +134,9 @@ export default function ControlPage() {
       ? stageOutput.currentSlide
       : null;
   const activeVideoTarget = mainVideoLive && stageVideoLive ? "both" : mainVideoLive ? "main" : "stage";
-  const liveProgramItemId = mainOutput?.currentItem?.id || stageOutput?.currentItem?.id || liveState?.currentItem?.id || null;
+  const liveReferenceOutput = mainOutput?.currentItem ? mainOutput : stageOutput?.currentItem ? stageOutput : liveState;
+  const liveProgramItemId = liveReferenceOutput?.currentItem?.id || null;
+  const liveProgramItemCompleted = Boolean(liveReferenceOutput?.currentItem && liveReferenceOutput.activeOutput === "background");
   const liveProgramItemIndex = useMemo(() => {
     if (!program?.items?.length || !liveProgramItemId) return -1;
     return program.items.findIndex((item) => item.id === liveProgramItemId);
@@ -162,6 +164,17 @@ export default function ControlPage() {
       setPendingServiceType(program.serviceType);
     }
   }, [program?.serviceType]);
+
+  useEffect(() => {
+    if (!program?.items?.length || !liveProgramItemCompleted || liveProgramItemIndex < 0) return;
+    if (selectedItemId && selectedItemId !== liveProgramItemId) return;
+
+    const nextItem = program.items[liveProgramItemIndex + 1];
+    if (nextItem) {
+      setSelectedItemId(nextItem.id);
+      setPreparedSlideIndex(0);
+    }
+  }, [program?.items, liveProgramItemCompleted, liveProgramItemIndex, liveProgramItemId, selectedItemId]);
 
   async function handleBackgroundUpload(file: File | null) {
     if (!file) return;
@@ -475,8 +488,9 @@ export default function ControlPage() {
             {program?.items?.length ? (
               program.items.map((item, index) => {
                 const isSelectedBlock = selectedItem?.id === item.id;
-                const isPastBlock = liveProgramItemIndex > -1 && index < liveProgramItemIndex;
-                const isCollapsedBlock = isPastBlock && !isSelectedBlock;
+                const isCompletedBlock = liveProgramItemCompleted && index === liveProgramItemIndex;
+                const isPastBlock = liveProgramItemIndex > -1 && (index < liveProgramItemIndex || isCompletedBlock);
+                const isCollapsedBlock = isPastBlock && (!isSelectedBlock || isCompletedBlock);
 
                 return (
                 <article className={`control-program-block ${isSelectedBlock ? "active" : ""} ${isCollapsedBlock ? "collapsed" : ""}`} key={item.id}>
