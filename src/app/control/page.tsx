@@ -7,6 +7,7 @@ import { blockTemplates, itemLabels, serviceTemplates } from "@/shared/catalog";
 import type { ProgramItem, Slide } from "@/shared/types";
 
 type OutputTarget = "main" | "stage" | "both";
+type SongBlockMode = "lyrics" | "lyrics_audio" | "video";
 
 function slidesForItem(item: ProgramItem | null): Slide[] {
   if (!item) return [];
@@ -83,6 +84,7 @@ export default function ControlPage() {
   const [dropTargetId, setDropTargetId] = useState<number | null>(null);
   const [preparedSlideIndex, setPreparedSlideIndex] = useState(0);
   const [preparedTarget, setPreparedTarget] = useState<OutputTarget>("both");
+  const [songBlockModes, setSongBlockModes] = useState<Record<number, SongBlockMode>>({});
 
   const selectedItem = useMemo(() => {
     const items = program?.items || [];
@@ -324,6 +326,44 @@ export default function ControlPage() {
     }));
   }
 
+  function getSongBlockMode(item: ProgramItem): SongBlockMode | null {
+    if (isVideoPath(item.filePath)) return "video";
+    if (item.audioFilePath) return "lyrics_audio";
+    if (item.songId) return "lyrics";
+    return songBlockModes[item.id] || null;
+  }
+
+  async function handleSetSongBlockMode(item: ProgramItem, mode: SongBlockMode) {
+    setSongBlockModes((current) => ({ ...current, [item.id]: mode }));
+    setSelectedItemId(item.id);
+    setItemFileStatus((current) => ({ ...current, [item.id]: "Se pregateste tipul blocului..." }));
+
+    if (mode === "lyrics") {
+      if (item.filePath) await api.clearProgramItemVisual(item.id);
+      if (item.audioFilePath) await api.clearProgramItemAudio(item.id);
+    }
+
+    if (mode === "lyrics_audio" && item.filePath) {
+      await api.clearProgramItemVisual(item.id);
+    }
+
+    if (mode === "video") {
+      if (item.songId) await api.updateProgramItem(item.id, { songId: null });
+      if (item.audioFilePath) await api.clearProgramItemAudio(item.id);
+    }
+
+    await refresh();
+    setSelectedItemId(item.id);
+    setItemFileStatus((current) => ({
+      ...current,
+      [item.id]: mode === "lyrics"
+        ? "Mod ales: doar text din librarie."
+        : mode === "lyrics_audio"
+          ? "Mod ales: text din librarie + fonograma."
+          : "Mod ales: doar video karaoke."
+    }));
+  }
+
   async function handleCreateService(serviceType: string, title: string) {
     setServiceStatus(`Se creeaza ${title}...`);
     const today = new Date().toISOString().slice(0, 10);
@@ -508,62 +548,76 @@ export default function ControlPage() {
                         const hasSong = Boolean(item.songId);
                         const hasAudio = Boolean(item.audioFilePath);
                         const hasVideo = isVideoPath(item.filePath);
-                        const textModeLocked = hasVideo;
-                        const videoModeLocked = hasSong || hasAudio;
+                        const songMode = getSongBlockMode(item);
+                        const showLyrics = songMode === "lyrics" || songMode === "lyrics_audio";
+                        const showAudio = songMode === "lyrics_audio";
+                        const showVideo = songMode === "video";
 
                         return (
                           <>
-                      <label>
-                        <span className="item-type">Cantare din librarie</span>
-                        <select
-                          disabled={textModeLocked}
-                          value={item.songId || ""}
-                          onChange={(event) => handleProgramItemSongChange(item, event.target.value ? Number(event.target.value) : null)}
-                        >
-                          <option value="">Alege din librarie</option>
-                          {songs.map((song) => (
-                            <option key={song.id} value={song.id}>{song.title}</option>
-                          ))}
-                        </select>
-                      </label>
-                      {hasSong ? (
-                        <button className="clear-asset-btn" onClick={() => handleClearProgramItemSong(item)}>
-                          Sterge cantarea
-                        </button>
+                      <div className="song-mode-row" aria-label="Alege tipul blocului">
+                        <button className={songMode === "lyrics" ? "active" : ""} onClick={() => handleSetSongBlockMode(item, "lyrics")}>Doar text</button>
+                        <button className={songMode === "lyrics_audio" ? "active" : ""} onClick={() => handleSetSongBlockMode(item, "lyrics_audio")}>Text + fonograma</button>
+                        <button className={songMode === "video" ? "active" : ""} onClick={() => handleSetSongBlockMode(item, "video")}>Doar video</button>
+                      </div>
+
+                      {showLyrics ? (
+                        <>
+                          <label>
+                            <span className="item-type">Cantare din librarie</span>
+                            <select
+                              value={item.songId || ""}
+                              onChange={(event) => handleProgramItemSongChange(item, event.target.value ? Number(event.target.value) : null)}
+                            >
+                              <option value="">Alege din librarie</option>
+                              {songs.map((song) => (
+                                <option key={song.id} value={song.id}>{song.title}</option>
+                              ))}
+                            </select>
+                          </label>
+                          {hasSong ? (
+                            <button className="clear-asset-btn" onClick={() => handleClearProgramItemSong(item)}>
+                              Sterge cantarea
+                            </button>
+                          ) : null}
+                        </>
                       ) : null}
 
-                      <div className="block-file-row">
-                        <label className={`asset-pill ${hasAudio ? "ready" : ""} ${textModeLocked ? "locked" : ""}`}>
-                          Fonograma
-                          <input
-                            accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac"
-                            disabled={textModeLocked}
-                            type="file"
-                            onChange={(event) => handleProgramItemFileUpload(item, "audio", event.target.files?.[0] || null)}
-                          />
-                        </label>
-                        <label className={`asset-pill ${hasVideo ? "ready" : ""} ${videoModeLocked ? "locked" : ""}`}>
-                          Video karaoke
-                          <input
-                            accept="video/*,.mp4,.webm,.mov,.mkv,.avi"
-                            disabled={videoModeLocked}
-                            type="file"
-                            onChange={(event) => handleProgramItemFileUpload(item, "video", event.target.files?.[0] || null)}
-                          />
-                        </label>
-                      </div>
-                      <div className="asset-clear-row">
-                        {hasAudio ? (
-                          <button className="clear-asset-btn" onClick={() => handleClearProgramItemAsset(item, "audio")}>
-                            Sterge fonograma
-                          </button>
-                        ) : null}
-                        {hasVideo ? (
-                          <button className="clear-asset-btn" onClick={() => handleClearProgramItemAsset(item, "video")}>
-                            Sterge video
-                          </button>
-                        ) : null}
-                      </div>
+                      {showAudio ? (
+                        <div className="block-file-row single">
+                          <label className={`asset-pill ${hasAudio ? "ready" : ""}`}>
+                            Fonograma
+                            <input
+                              accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac"
+                              type="file"
+                              onChange={(event) => handleProgramItemFileUpload(item, "audio", event.target.files?.[0] || null)}
+                            />
+                          </label>
+                          {hasAudio ? (
+                            <button className="clear-asset-btn" onClick={() => handleClearProgramItemAsset(item, "audio")}>
+                              Sterge fonograma
+                            </button>
+                          ) : null}
+                        </div>
+                      ) : null}
+
+                      {showVideo ? (
+                        <div className="block-file-row single">
+                          <label className={`asset-pill ${hasVideo ? "ready" : ""}`}>
+                            Video karaoke
+                            <input
+                              accept="video/*,.mp4,.webm,.mov,.mkv,.avi"
+                              type="file"
+                              onChange={(event) => handleProgramItemFileUpload(item, "video", event.target.files?.[0] || null)}
+                            />
+                          </label>
+                          {hasVideo ? (
+                            <button className="clear-asset-btn" onClick={() => handleClearProgramItemAsset(item, "video")}>
+                              Sterge video
+                            </button>
+                          ) : null}
+                        </div>
+                      ) : null}
 
                       <div className="output-target-row block-output-row" aria-label="Alege ecranul pentru bloc">
                         <button className={selectedItem?.id === item.id && preparedTarget === "main" ? "active" : ""} onClick={() => handlePrepareItem(item, "main")}>Sala</button>
@@ -577,9 +631,11 @@ export default function ControlPage() {
 
                       <div className="program-asset-status">
                         {itemFileStatus[item.id]
-                          || (hasVideo
-                            ? "Mod video karaoke: cantarea si fonograma sunt blocate."
-                            : `${item.song ? item.song.title : "fara cantare"} / ${hasAudio ? "fonograma" : "fara fonograma"} / video blocat dupa alegerea cantarii sau fonogramei`)}
+                          || (songMode
+                            ? showVideo
+                              ? `${hasVideo ? "video karaoke ales" : "alege fisier video karaoke"}`
+                              : `${item.song ? item.song.title : "fara cantare"}${showAudio ? ` / ${hasAudio ? "fonograma" : "fara fonograma"}` : ""}`
+                            : "Alege mai intai tipul acestui bloc.")}
                       </div>
                           </>
                         );

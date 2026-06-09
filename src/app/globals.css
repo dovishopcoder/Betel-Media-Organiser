@@ -261,11 +261,40 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.song-mode-row {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 1fr;
+}
+
+.song-mode-row button {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 32px;
+  padding: 0 8px;
+  text-align: left;
+}
+
+.song-mode-row button.active {
+  background: #eef6f3;
+  border-color: var(--accent);
+  color: var(--accent-strong);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
 .block-file-row,
 .block-screen-row {
   display: grid;
   gap: 6px;
   grid-template-columns: 1fr 1fr;
+}
+
+.block-file-row.single {
+  grid-template-columns: 1fr;
 }
 
 .block-screen-row {
