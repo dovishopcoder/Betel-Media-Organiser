@@ -189,6 +189,12 @@ button:disabled {
   padding: 8px;
 }
 
+.control-program-block.collapsed {
+  gap: 0;
+  opacity: 0.76;
+  padding: 7px 8px;
+}
+
 .control-program-block.active {
   border-color: var(--accent);
   box-shadow: inset 3px 0 0 var(--accent);

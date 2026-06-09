@@ -134,6 +134,11 @@ export default function ControlPage() {
       ? stageOutput.currentSlide
       : null;
   const activeVideoTarget = mainVideoLive && stageVideoLive ? "both" : mainVideoLive ? "main" : "stage";
+  const liveProgramItemId = mainOutput?.currentItem?.id || stageOutput?.currentItem?.id || liveState?.currentItem?.id || null;
+  const liveProgramItemIndex = useMemo(() => {
+    if (!program?.items?.length || !liveProgramItemId) return -1;
+    return program.items.findIndex((item) => item.id === liveProgramItemId);
+  }, [program?.items, liveProgramItemId]);
 
   useEffect(() => {
     let mounted = true;
@@ -468,17 +473,22 @@ export default function ControlPage() {
           <div className="item-type">Blocuri program</div>
           <div className="control-block-list">
             {program?.items?.length ? (
-              program.items.map((item, index) => (
-                <article className={`control-program-block ${selectedItem?.id === item.id ? "active" : ""}`} key={item.id}>
+              program.items.map((item, index) => {
+                const isSelectedBlock = selectedItem?.id === item.id;
+                const isPastBlock = liveProgramItemIndex > -1 && index < liveProgramItemIndex;
+                const isCollapsedBlock = isPastBlock && !isSelectedBlock;
+
+                return (
+                <article className={`control-program-block ${isSelectedBlock ? "active" : ""} ${isCollapsedBlock ? "collapsed" : ""}`} key={item.id}>
                   <button className="block-head" onClick={() => setSelectedItemId(item.id)}>
                     <span>{index + 1}</span>
                     <div>
                       <strong>{item.title}</strong>
-                      <small>{itemLabels[item.type] || item.type}</small>
+                      <small>{isCollapsedBlock ? "Trecut" : itemLabels[item.type] || item.type}</small>
                     </div>
                   </button>
 
-                  {item.type === "song" ? (
+                  {!isCollapsedBlock && item.type === "song" ? (
                     <div className="song-block-controls">
                       {(() => {
                         const hasSong = Boolean(item.songId);
@@ -563,7 +573,8 @@ export default function ControlPage() {
                     </div>
                   ) : null}
                 </article>
-              ))
+                );
+              })
             ) : (
               <div className="empty-state">Programul curent nu are blocuri.</div>
             )}
