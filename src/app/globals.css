@@ -286,6 +286,34 @@ button:disabled {
   box-shadow: inset 3px 0 0 var(--accent);
 }
 
+.song-mode-selected {
+  align-items: center;
+  background: #eef6f3;
+  border: 1px solid #bfd8d0;
+  border-radius: 6px;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  min-height: 30px;
+  padding: 4px 6px 4px 9px;
+}
+
+.song-mode-selected strong {
+  color: var(--accent-strong);
+  font-size: 12px;
+}
+
+.song-mode-selected button {
+  background: #fff;
+  border: 1px solid #d7e2df;
+  border-radius: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  min-height: 24px;
+  padding: 0 7px;
+}
+
 .block-file-row,
 .block-screen-row {
   display: grid;

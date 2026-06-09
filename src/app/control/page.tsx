@@ -85,6 +85,7 @@ export default function ControlPage() {
   const [preparedSlideIndex, setPreparedSlideIndex] = useState(0);
   const [preparedTarget, setPreparedTarget] = useState<OutputTarget>("both");
   const [songBlockModes, setSongBlockModes] = useState<Record<number, SongBlockMode>>({});
+  const [openSongModeChooser, setOpenSongModeChooser] = useState<Record<number, boolean>>({});
 
   const selectedItem = useMemo(() => {
     const items = program?.items || [];
@@ -335,6 +336,7 @@ export default function ControlPage() {
 
   async function handleSetSongBlockMode(item: ProgramItem, mode: SongBlockMode) {
     setSongBlockModes((current) => ({ ...current, [item.id]: mode }));
+    setOpenSongModeChooser((current) => ({ ...current, [item.id]: false }));
     setSelectedItemId(item.id);
     setItemFileStatus((current) => ({ ...current, [item.id]: "Se pregateste tipul blocului..." }));
 
@@ -552,14 +554,29 @@ export default function ControlPage() {
                         const showLyrics = songMode === "lyrics" || songMode === "lyrics_audio";
                         const showAudio = songMode === "lyrics_audio";
                         const showVideo = songMode === "video";
+                        const showModeChoices = !songMode || openSongModeChooser[item.id];
+                        const modeLabel = songMode === "lyrics"
+                          ? "Doar text"
+                          : songMode === "lyrics_audio"
+                            ? "Text + fonograma"
+                            : songMode === "video"
+                              ? "Doar video"
+                              : "";
 
                         return (
                           <>
-                      <div className="song-mode-row" aria-label="Alege tipul blocului">
-                        <button className={songMode === "lyrics" ? "active" : ""} onClick={() => handleSetSongBlockMode(item, "lyrics")}>Doar text</button>
-                        <button className={songMode === "lyrics_audio" ? "active" : ""} onClick={() => handleSetSongBlockMode(item, "lyrics_audio")}>Text + fonograma</button>
-                        <button className={songMode === "video" ? "active" : ""} onClick={() => handleSetSongBlockMode(item, "video")}>Doar video</button>
-                      </div>
+                      {showModeChoices ? (
+                        <div className="song-mode-row" aria-label="Alege tipul blocului">
+                          <button className={songMode === "lyrics" ? "active" : ""} onClick={() => handleSetSongBlockMode(item, "lyrics")}>Doar text</button>
+                          <button className={songMode === "lyrics_audio" ? "active" : ""} onClick={() => handleSetSongBlockMode(item, "lyrics_audio")}>Text + fonograma</button>
+                          <button className={songMode === "video" ? "active" : ""} onClick={() => handleSetSongBlockMode(item, "video")}>Doar video</button>
+                        </div>
+                      ) : (
+                        <div className="song-mode-selected">
+                          <strong>{modeLabel}</strong>
+                          <button onClick={() => setOpenSongModeChooser((current) => ({ ...current, [item.id]: true }))}>Schimba</button>
+                        </div>
+                      )}
 
                       {showLyrics ? (
                         <>
