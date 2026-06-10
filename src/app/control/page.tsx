@@ -692,7 +692,7 @@ export default function ControlPage() {
         </div>
 
         <div className="toolbar">
-          <button className="ghost-btn" disabled={!hasLiveItem} onClick={() => api.previous()} title="Previous">
+          <button className="previous-btn" disabled={!hasLiveItem} onClick={() => api.previous()} title="Previous">
             <ChevronLeft size={18} /> Previous
           </button>
           <button className="primary-btn" disabled={!hasLiveItem} onClick={() => api.next()} title="Next">

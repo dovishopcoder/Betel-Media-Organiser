@@ -652,7 +652,8 @@ button:disabled {
 
 .primary-btn,
 .danger-btn,
-.ghost-btn {
+.ghost-btn,
+.previous-btn {
   border-radius: 6px;
   min-height: 38px;
   padding: 0 12px;
@@ -672,6 +673,12 @@ button:disabled {
 
 .ghost-btn {
   background: transparent;
+}
+
+.previous-btn {
+  background: #eef3f8;
+  border-color: #c8d8e8;
+  color: #24506f;
 }
 
 .go-live-group {
