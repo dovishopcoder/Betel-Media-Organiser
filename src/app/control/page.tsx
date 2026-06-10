@@ -86,6 +86,7 @@ export default function ControlPage() {
   const [preparedTarget, setPreparedTarget] = useState<OutputTarget>("both");
   const [songBlockModes, setSongBlockModes] = useState<Record<number, SongBlockMode>>({});
   const [openSongModeChooser, setOpenSongModeChooser] = useState<Record<number, boolean>>({});
+  const [finishedItemIds, setFinishedItemIds] = useState<number[]>([]);
 
   const selectedItem = useMemo(() => {
     const items = program?.items || [];
@@ -139,11 +140,6 @@ export default function ControlPage() {
   const activeVideoTarget = mainVideoLive && stageVideoLive ? "both" : mainVideoLive ? "main" : "stage";
   const liveReferenceOutput = mainOutput?.currentItem ? mainOutput : stageOutput?.currentItem ? stageOutput : liveState;
   const liveProgramItemId = liveReferenceOutput?.currentItem?.id || null;
-  const liveProgramItemCompleted = Boolean(liveReferenceOutput?.currentItem && liveReferenceOutput.activeOutput === "background");
-  const liveProgramItemIndex = useMemo(() => {
-    if (!program?.items?.length || !liveProgramItemId) return -1;
-    return program.items.findIndex((item) => item.id === liveProgramItemId);
-  }, [program?.items, liveProgramItemId]);
 
   useEffect(() => {
     let mounted = true;
@@ -169,15 +165,8 @@ export default function ControlPage() {
   }, [program?.serviceType]);
 
   useEffect(() => {
-    if (!program?.items?.length || !liveProgramItemCompleted || liveProgramItemIndex < 0) return;
-    if (selectedItemId && selectedItemId !== liveProgramItemId) return;
-
-    const nextItem = program.items[liveProgramItemIndex + 1];
-    if (nextItem) {
-      setSelectedItemId(nextItem.id);
-      setPreparedSlideIndex(0);
-    }
-  }, [program?.items, liveProgramItemCompleted, liveProgramItemIndex, liveProgramItemId, selectedItemId]);
+    setFinishedItemIds([]);
+  }, [program?.id]);
 
   async function handleBackgroundUpload(file: File | null) {
     if (!file) return;
@@ -274,6 +263,21 @@ export default function ControlPage() {
   async function handleGoLive() {
     if (!selectedItem) return;
     await api.goLive(selectedItem.id, preparedSlideIndex, preparedTarget);
+  }
+
+  async function handleFinish() {
+    const items = program?.items || [];
+    const finishedItemId = liveProgramItemId || selectedItem?.id || null;
+    await api.clear("both");
+    if (!finishedItemId) return;
+
+    setFinishedItemIds((current) => current.includes(finishedItemId) ? current : [...current, finishedItemId]);
+    const finishedIndex = items.findIndex((item) => item.id === finishedItemId);
+    const nextItem = finishedIndex >= 0 ? items[finishedIndex + 1] : null;
+    if (nextItem) {
+      setSelectedItemId(nextItem.id);
+      setPreparedSlideIndex(0);
+    }
   }
 
   async function handleProgramItemSongChange(item: ProgramItem, songId: number | null) {
@@ -530,9 +534,8 @@ export default function ControlPage() {
             {program?.items?.length ? (
               program.items.map((item, index) => {
                 const isSelectedBlock = selectedItem?.id === item.id;
-                const isCompletedBlock = liveProgramItemCompleted && index === liveProgramItemIndex;
-                const isPastBlock = liveProgramItemIndex > -1 && (index < liveProgramItemIndex || isCompletedBlock);
-                const isCollapsedBlock = isPastBlock && (!isSelectedBlock || isCompletedBlock);
+                const isFinishedBlock = finishedItemIds.includes(item.id);
+                const isCollapsedBlock = isFinishedBlock;
 
                 return (
                 <article className={`control-program-block ${isSelectedBlock ? "active" : ""} ${isCollapsedBlock ? "collapsed" : ""}`} key={item.id}>
@@ -540,15 +543,9 @@ export default function ControlPage() {
                     <span>{index + 1}</span>
                     <div>
                       <strong>{item.title}</strong>
-                      <small>{isCompletedBlock ? "Terminat pe fundal" : isCollapsedBlock ? "Trecut" : itemLabels[item.type] || item.type}</small>
+                      <small>{isFinishedBlock ? "Finalizat" : itemLabels[item.type] || item.type}</small>
                     </div>
                   </button>
-
-                  {isCompletedBlock ? (
-                    <button className="completed-block-return" onClick={() => api.previous()}>
-                      Revino la ultimul slide
-                    </button>
-                  ) : null}
 
                   {!isCollapsedBlock && item.type === "song" ? (
                     <div className="song-block-controls">
@@ -695,8 +692,8 @@ export default function ControlPage() {
           <button className="primary-btn" onClick={() => api.next()} title="Next">
             Next <ChevronRight size={18} />
           </button>
-          <button className="danger-btn" onClick={() => api.clear("both")} title="Fundal">
-            <Square size={16} /> Fundal ambele
+          <button className="danger-btn" onClick={handleFinish} title="Finish">
+            <Square size={16} /> Finish
           </button>
         </div>
 

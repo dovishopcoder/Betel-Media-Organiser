@@ -235,16 +235,6 @@ button:disabled {
   margin-top: 2px;
 }
 
-.completed-block-return {
-  background: #fff8e8;
-  border: 1px solid #e7c36d;
-  border-radius: 6px;
-  color: #7a4d00;
-  font-size: 12px;
-  font-weight: 700;
-  min-height: 28px;
-}
-
 .song-block-controls {
   border-top: 1px solid #edf0f3;
   display: grid;
