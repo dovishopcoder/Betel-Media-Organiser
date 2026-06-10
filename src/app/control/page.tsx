@@ -540,9 +540,15 @@ export default function ControlPage() {
                     <span>{index + 1}</span>
                     <div>
                       <strong>{item.title}</strong>
-                      <small>{isCollapsedBlock ? "Trecut" : itemLabels[item.type] || item.type}</small>
+                      <small>{isCompletedBlock ? "Terminat pe fundal" : isCollapsedBlock ? "Trecut" : itemLabels[item.type] || item.type}</small>
                     </div>
                   </button>
+
+                  {isCompletedBlock ? (
+                    <button className="completed-block-return" onClick={() => api.previous()}>
+                      Revino la ultimul slide
+                    </button>
+                  ) : null}
 
                   {!isCollapsedBlock && item.type === "song" ? (
                     <div className="song-block-controls">
