@@ -353,14 +353,15 @@ export default function ControlPage() {
   }
 
   function getSongBlockMode(item: ProgramItem): SongBlockMode | null {
+    const storedMode = songBlockModes[item.id] || null;
+    if (item.type === "song" && storedMode === "audio") return null;
+    if (item.type === "solo_song" && storedMode === "video") return null;
+    if (storedMode) return storedMode;
     if (isVideoPath(item.filePath)) return "video";
     if (item.type === "solo_song" && item.audioFilePath && !item.songId) return "audio";
     if (item.audioFilePath) return "lyrics_audio";
     if (item.songId) return "lyrics";
-    const storedMode = songBlockModes[item.id] || null;
-    if (item.type === "song" && storedMode === "audio") return null;
-    if (item.type === "solo_song" && storedMode === "video") return null;
-    return storedMode;
+    return null;
   }
 
   async function handleSetSongBlockMode(item: ProgramItem, mode: SongBlockMode) {
