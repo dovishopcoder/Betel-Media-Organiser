@@ -7,7 +7,7 @@ import { blockTemplates, itemLabels, serviceTemplates } from "@/shared/catalog";
 import type { ProgramItem, Slide } from "@/shared/types";
 
 type OutputTarget = "main" | "stage" | "both";
-type SongBlockMode = "lyrics" | "lyrics_audio" | "video";
+type SongBlockMode = "lyrics" | "lyrics_audio" | "video" | "audio";
 
 function slidesForItem(item: ProgramItem | null): Slide[] {
   if (!item) return [];
@@ -23,7 +23,7 @@ function slidesForItem(item: ProgramItem | null): Slide[] {
     }];
   }
 
-  if (item.type === "song" && item.song) {
+  if (isSongBlock(item) && item.song) {
     return item.song.displayOrder.map((key, index) => ({
       id: `${item.id}-${key}-${index}`,
       type: "lyric",
@@ -33,6 +33,18 @@ function slidesForItem(item: ProgramItem | null): Slide[] {
       filePath: null,
       sortOrder: index
     }));
+  }
+
+  if (item.type === "solo_song" && item.audioFilePath) {
+    return [{
+      id: `${item.id}-audio`,
+      type: "audio",
+      title: item.title,
+      label: "audio",
+      body: item.notes || item.title,
+      filePath: item.audioFilePath,
+      sortOrder: 0
+    }];
   }
 
   return [{
@@ -48,6 +60,10 @@ function slidesForItem(item: ProgramItem | null): Slide[] {
 
 function isVideoPath(filePath: string | null | undefined) {
   return Boolean(filePath && /\.(mp4|webm|ogg|mov|mkv|avi)$/i.test(filePath));
+}
+
+function isSongBlock(item: ProgramItem | null | undefined) {
+  return item?.type === "song" || item?.type === "solo_song";
 }
 
 function detectMediaTypeFromFile(file: File): "audio" | "video" | "presentation" | null {
@@ -99,13 +115,13 @@ export default function ControlPage() {
   const selectedSlides = serverSlides || fallbackSlides;
   const mainOutput = liveState?.outputs?.main || liveState;
   const stageOutput = liveState?.outputs?.stage || liveState;
-  const mainSongPhonogram = mainOutput?.activeOutput === "program" && mainOutput.currentItem?.type === "song" && mainOutput.currentItem.audioFilePath
+  const mainSongPhonogram = mainOutput?.activeOutput === "program" && isSongBlock(mainOutput.currentItem) && mainOutput.currentItem.audioFilePath
     ? {
         title: `Fonograma - ${mainOutput.currentItem.title}`,
         filePath: mainOutput.currentItem.audioFilePath
       }
     : null;
-  const stageSongPhonogram = stageOutput?.activeOutput === "program" && stageOutput.currentItem?.type === "song" && stageOutput.currentItem.audioFilePath
+  const stageSongPhonogram = stageOutput?.activeOutput === "program" && isSongBlock(stageOutput.currentItem) && stageOutput.currentItem.audioFilePath
     ? {
         title: `Fonograma - ${stageOutput.currentItem.title}`,
         filePath: stageOutput.currentItem.audioFilePath
@@ -118,7 +134,7 @@ export default function ControlPage() {
       : stageOutput?.currentSlide?.type === "audio" && stageOutput.currentSlide.filePath
         ? stageOutput.currentSlide
         : null);
-  const selectedSongAudio = selectedItem?.type === "song" && selectedItem.audioFilePath
+  const selectedSongAudio = isSongBlock(selectedItem) && selectedItem.audioFilePath
     ? {
         title: `Fonograma - ${selectedItem.title}`,
         filePath: selectedItem.audioFilePath
@@ -338,9 +354,13 @@ export default function ControlPage() {
 
   function getSongBlockMode(item: ProgramItem): SongBlockMode | null {
     if (isVideoPath(item.filePath)) return "video";
+    if (item.type === "solo_song" && item.audioFilePath && !item.songId) return "audio";
     if (item.audioFilePath) return "lyrics_audio";
     if (item.songId) return "lyrics";
-    return songBlockModes[item.id] || null;
+    const storedMode = songBlockModes[item.id] || null;
+    if (item.type === "song" && storedMode === "audio") return null;
+    if (item.type === "solo_song" && storedMode === "video") return null;
+    return storedMode;
   }
 
   async function handleSetSongBlockMode(item: ProgramItem, mode: SongBlockMode) {
@@ -363,6 +383,11 @@ export default function ControlPage() {
       if (item.audioFilePath) await api.clearProgramItemAudio(item.id);
     }
 
+    if (mode === "audio") {
+      if (item.songId) await api.updateProgramItem(item.id, { songId: null });
+      if (item.filePath) await api.clearProgramItemVisual(item.id);
+    }
+
     await refresh();
     setSelectedItemId(item.id);
     setItemFileStatus((current) => ({
@@ -371,7 +396,9 @@ export default function ControlPage() {
         ? "Mod ales: doar text din librarie."
         : mode === "lyrics_audio"
           ? "Mod ales: text din librarie + fonograma."
-          : "Mod ales: doar video karaoke."
+          : mode === "video"
+            ? "Mod ales: doar video karaoke."
+            : "Mod ales: doar audio fisier."
     }));
   }
 
@@ -558,16 +585,18 @@ export default function ControlPage() {
                     </button>
                   ) : null}
 
-                  {!isCollapsedBlock && item.type === "song" ? (
+                  {!isCollapsedBlock && isSongBlock(item) ? (
                     <div className="song-block-controls">
                       {(() => {
                         const hasSong = Boolean(item.songId);
                         const hasAudio = Boolean(item.audioFilePath);
                         const hasVideo = isVideoPath(item.filePath);
+                        const isCommonSong = item.type === "song";
                         const songMode = getSongBlockMode(item);
                         const showLyrics = songMode === "lyrics" || songMode === "lyrics_audio";
                         const showAudio = songMode === "lyrics_audio";
-                        const showVideo = songMode === "video";
+                        const showVideo = isCommonSong && songMode === "video";
+                        const showAudioOnly = item.type === "solo_song" && songMode === "audio";
                         const showModeChoices = !songMode || openSongModeChooser[item.id];
                         const modeLabel = songMode === "lyrics"
                           ? "Doar text"
@@ -575,6 +604,8 @@ export default function ControlPage() {
                             ? "Text + fonograma"
                             : songMode === "video"
                               ? "Doar video"
+                              : songMode === "audio"
+                                ? "Audio fisier"
                               : "";
 
                         return (
@@ -583,7 +614,11 @@ export default function ControlPage() {
                         <div className="song-mode-row" aria-label="Alege tipul blocului">
                           <button className={songMode === "lyrics" ? "active" : ""} onClick={() => handleSetSongBlockMode(item, "lyrics")}>Doar text</button>
                           <button className={songMode === "lyrics_audio" ? "active" : ""} onClick={() => handleSetSongBlockMode(item, "lyrics_audio")}>Text + fonograma</button>
-                          <button className={songMode === "video" ? "active" : ""} onClick={() => handleSetSongBlockMode(item, "video")}>Doar video</button>
+                          {isCommonSong ? (
+                            <button className={songMode === "video" ? "active" : ""} onClick={() => handleSetSongBlockMode(item, "video")}>Doar video</button>
+                          ) : (
+                            <button className={songMode === "audio" ? "active" : ""} onClick={() => handleSetSongBlockMode(item, "audio")}>Audio fisier</button>
+                          )}
                         </div>
                       ) : (
                         <div className="song-mode-selected">
@@ -650,17 +685,43 @@ export default function ControlPage() {
                         </div>
                       ) : null}
 
-                      <div className="output-target-row block-output-row" aria-label="Alege ecranul pentru bloc">
-                        <button className={selectedItem?.id === item.id && preparedTarget === "main" ? "active" : ""} onClick={() => handlePrepareItem(item, "main")}>Sala</button>
-                        <button className={selectedItem?.id === item.id && preparedTarget === "stage" ? "active" : ""} onClick={() => handlePrepareItem(item, "stage")}>Scena</button>
-                        <button className={selectedItem?.id === item.id && preparedTarget === "both" ? "active" : ""} onClick={() => handlePrepareItem(item, "both")}>Ambele</button>
-                      </div>
+                      {showAudioOnly ? (
+                        <div className="block-file-row single">
+                          <label className={`asset-pill ${hasAudio ? "ready" : ""}`}>
+                            Audio fisier
+                            <input
+                              accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac"
+                              type="file"
+                              onChange={(event) => handleProgramItemFileUpload(item, "audio", event.target.files?.[0] || null)}
+                            />
+                          </label>
+                          {hasAudio ? (
+                            <button className="clear-asset-btn" onClick={() => handleClearProgramItemAsset(item, "audio")}>
+                              Sterge audio
+                            </button>
+                          ) : null}
+                        </div>
+                      ) : null}
+
+                      {!showAudioOnly ? (
+                        <div className="output-target-row block-output-row" aria-label="Alege ecranul pentru bloc">
+                          <button className={selectedItem?.id === item.id && preparedTarget === "main" ? "active" : ""} onClick={() => handlePrepareItem(item, "main")}>Sala</button>
+                          <button className={selectedItem?.id === item.id && preparedTarget === "stage" ? "active" : ""} onClick={() => handlePrepareItem(item, "stage")}>Scena</button>
+                          <button className={selectedItem?.id === item.id && preparedTarget === "both" ? "active" : ""} onClick={() => handlePrepareItem(item, "both")}>Ambele</button>
+                        </div>
+                      ) : (
+                        <button className="audio-background-btn" onClick={() => handlePrepareItem(item, "both")}>
+                          Pregateste audio pe fundal
+                        </button>
+                      )}
 
                       <div className="program-asset-status">
                         {itemFileStatus[item.id]
                           || (songMode
                             ? showVideo
                               ? `${hasVideo ? "video karaoke ales" : "alege fisier video karaoke"}`
+                              : showAudioOnly
+                                ? `${hasAudio ? "audio ales - ecranele raman pe fundal" : "alege fisier audio"}`
                               : `${item.song ? item.song.title : "fara cantare"}${showAudio ? ` / ${hasAudio ? "fonograma" : "fara fonograma"}` : ""}`
                             : "Alege mai intai tipul acestui bloc.")}
                       </div>

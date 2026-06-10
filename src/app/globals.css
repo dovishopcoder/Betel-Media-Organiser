@@ -343,6 +343,17 @@ button:disabled {
   grid-template-columns: 1fr;
 }
 
+.audio-background-btn {
+  background: #f6f8fb;
+  border: 1px solid #c8d8e8;
+  border-radius: 6px;
+  color: #24506f;
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 34px;
+  width: 100%;
+}
+
 .block-screen-row {
   grid-template-columns: repeat(3, 1fr);
 }

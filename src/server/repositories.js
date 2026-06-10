@@ -72,7 +72,7 @@ function createSlidesForItem(item) {
     ];
   }
 
-  if (item.type === "song" && item.song) {
+  if (["song", "solo_song"].includes(item.type) && item.song) {
     return item.song.displayOrder.map((sectionKey, index) => ({
       id: `${item.id}-${sectionKey}-${index}`,
       type: "lyric",
@@ -82,6 +82,21 @@ function createSlidesForItem(item) {
       notes: item.notes || "",
       sortOrder: index
     }));
+  }
+
+  if (item.type === "solo_song" && item.audioFilePath) {
+    return [
+      {
+        id: `${item.id}-audio`,
+        type: "audio",
+        label: "audio",
+        title: item.title,
+        body: item.notes || item.title,
+        filePath: item.audioFilePath,
+        notes: item.notes || "",
+        sortOrder: 0
+      }
+    ];
   }
 
   if (item.type === "presentation") {

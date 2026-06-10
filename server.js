@@ -187,7 +187,7 @@ app.prepare().then(() => {
     try {
       const item = repos.programs.getItem(Number(req.params.itemId));
       if (!item) return res.status(404).json({ error: "Program item not found" });
-      if (item.type !== "song") return res.status(400).json({ error: "Fonograma poate fi atasata doar la o cantare." });
+      if (!["song", "solo_song"].includes(item.type)) return res.status(400).json({ error: "Fisierul audio poate fi atasat doar la o cantare." });
       if (!req.file) return res.status(400).json({ error: "Alege un fisier audio." });
 
       if (!isAllowedMedia({ fileName: req.file.originalname, mediaType: "audio", mimeType: req.file.mimetype })) {
@@ -211,7 +211,7 @@ app.prepare().then(() => {
   expressApp.delete("/api/program-items/:itemId/audio", (req, res) => {
     const item = repos.programs.getItem(Number(req.params.itemId));
     if (!item) return res.status(404).json({ error: "Program item not found" });
-    if (item.type !== "song") return res.status(400).json({ error: "Fonograma poate fi stearsa doar de la o cantare." });
+    if (!["song", "solo_song"].includes(item.type)) return res.status(400).json({ error: "Fisierul audio poate fi sters doar de la o cantare." });
 
     const updatedItem = repos.programs.clearAudio(item.id);
     refreshProgramOrder();
