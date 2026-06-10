@@ -93,11 +93,11 @@ export function useLiveMedia() {
         body: JSON.stringify({ direction: "previous" })
       });
     },
-    clear(target: "main" | "stage" | "both" = "both") {
+    clear(target: "main" | "stage" | "both" = "both", finish = false) {
       return fetch("/api/live/clear", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ target })
+        body: JSON.stringify({ target, finish })
       });
     },
     async getProgramItemSlides(itemId: number): Promise<Slide[]> {

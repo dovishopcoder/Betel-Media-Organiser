@@ -403,12 +403,14 @@ app.prepare().then(() => {
   });
 
   expressApp.post("/api/live/clear", (req, res) => {
-    const { target = "both" } = req.body || {};
+    const { target = "both", finish = false } = req.body || {};
     const targets = target === "both" ? ["main", "stage"] : [target === "stage" ? "stage" : "main"];
     const outputs = { ...liveState.outputs };
     for (const screen of targets) {
       outputs[screen] = {
         ...outputs[screen],
+        currentItem: finish ? null : outputs[screen].currentItem,
+        currentSlideIndex: finish ? 0 : outputs[screen].currentSlideIndex,
         currentSlide: null,
         nextSlide: null,
         activeOutput: "background"

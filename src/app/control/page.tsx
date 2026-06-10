@@ -90,7 +90,8 @@ export default function ControlPage() {
 
   const selectedItem = useMemo(() => {
     const items = program?.items || [];
-    return items.find((item) => item.id === selectedItemId) || liveState?.currentItem || items[0] || null;
+    if (selectedItemId === null) return null;
+    return items.find((item) => item.id === selectedItemId) || liveState?.currentItem || null;
   }, [program, selectedItemId, liveState]);
   const selectedService = serviceTemplates.find((service) => service.type === selectedServiceType) || serviceTemplates[0];
   const pendingService = serviceTemplates.find((service) => service.type === pendingServiceType) || null;
@@ -140,6 +141,7 @@ export default function ControlPage() {
   const activeVideoTarget = mainVideoLive && stageVideoLive ? "both" : mainVideoLive ? "main" : "stage";
   const liveReferenceOutput = mainOutput?.currentItem ? mainOutput : stageOutput?.currentItem ? stageOutput : liveState;
   const liveProgramItemId = liveReferenceOutput?.currentItem?.id || null;
+  const hasLiveItem = Boolean(mainOutput?.currentItem || stageOutput?.currentItem || liveState?.currentItem);
 
   useEffect(() => {
     let mounted = true;
@@ -266,18 +268,14 @@ export default function ControlPage() {
   }
 
   async function handleFinish() {
-    const items = program?.items || [];
     const finishedItemId = liveProgramItemId || selectedItem?.id || null;
-    await api.clear("both");
+    await api.clear("both", true);
     if (!finishedItemId) return;
 
     setFinishedItemIds((current) => current.includes(finishedItemId) ? current : [...current, finishedItemId]);
-    const finishedIndex = items.findIndex((item) => item.id === finishedItemId);
-    const nextItem = finishedIndex >= 0 ? items[finishedIndex + 1] : null;
-    if (nextItem) {
-      setSelectedItemId(nextItem.id);
-      setPreparedSlideIndex(0);
-    }
+    setSelectedItemId(null);
+    setPreparedSlideIndex(0);
+    setServerSlides(null);
   }
 
   async function handleProgramItemSongChange(item: ProgramItem, songId: number | null) {
@@ -679,26 +677,27 @@ export default function ControlPage() {
             <div className="muted">{selectedItem?.notes || "Slide-urile apar aici."}</div>
           </div>
           <div className="go-live-group">
-            <button className="primary-btn" onClick={handleGoLive}>
+            <button className="primary-btn" disabled={!selectedItem} onClick={handleGoLive}>
               <Tv size={17} /> Go Live
             </button>
           </div>
         </div>
 
         <div className="toolbar">
-          <button className="ghost-btn" onClick={() => api.previous()} title="Previous">
+          <button className="ghost-btn" disabled={!hasLiveItem} onClick={() => api.previous()} title="Previous">
             <ChevronLeft size={18} /> Previous
           </button>
-          <button className="primary-btn" onClick={() => api.next()} title="Next">
+          <button className="primary-btn" disabled={!hasLiveItem} onClick={() => api.next()} title="Next">
             Next <ChevronRight size={18} />
           </button>
-          <button className="danger-btn" onClick={handleFinish} title="Finish">
+          <button className="danger-btn" disabled={!hasLiveItem && !selectedItem} onClick={handleFinish} title="Finish">
             <Square size={16} /> Finish
           </button>
         </div>
 
-        <div className="slide-grid">
-          {selectedSlides.map((slide, index) => (
+        {selectedItem ? (
+          <div className="slide-grid">
+            {selectedSlides.map((slide, index) => (
             <button
               className={`slide-tile ${liveState?.currentItem?.id === selectedItem?.id && liveState.currentSlideIndex === index ? "active" : ""} ${preparedSlideIndex === index ? "prepared" : ""}`}
               key={slide.id}
@@ -711,8 +710,11 @@ export default function ControlPage() {
               <strong>{slide.title}</strong>
               {slide.type === "presentation" && slide.filePath ? null : <div className="slide-body-preview">{slide.body}</div>}
             </button>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">Alege un bloc din stanga pentru pregatire.</div>
+        )}
 
         {centerAudio ? (
           <section className="audio-control-panel center-audio-panel">
