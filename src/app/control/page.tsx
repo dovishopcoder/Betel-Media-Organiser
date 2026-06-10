@@ -655,10 +655,6 @@ export default function ControlPage() {
                         <button className={selectedItem?.id === item.id && preparedTarget === "both" ? "active" : ""} onClick={() => handlePrepareItem(item, "both")}>Ambele</button>
                       </div>
 
-                      <button className="song-live-btn" onClick={() => handlePrepareItem(item, selectedItem?.id === item.id ? preparedTarget : "both")}>
-                        Pregateste cantarea
-                      </button>
-
                       <div className="program-asset-status">
                         {itemFileStatus[item.id]
                           || (songMode

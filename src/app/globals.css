@@ -352,17 +352,6 @@ button:disabled {
   color: #fff;
 }
 
-.song-live-btn {
-  background: var(--accent);
-  border-color: var(--accent);
-  border-radius: 6px;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  min-height: 34px;
-  width: 100%;
-}
-
 .asset-clear-row {
   display: grid;
   gap: 6px;
