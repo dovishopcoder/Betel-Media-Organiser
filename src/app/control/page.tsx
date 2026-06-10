@@ -699,7 +699,7 @@ export default function ControlPage() {
           <button className="primary-btn" disabled={!canStepSelectedItem} onClick={() => api.next()} title="Next">
             Next <ChevronRight size={18} />
           </button>
-          <button className="danger-btn" disabled={!hasLiveItem && !selectedItem} onClick={handleFinish} title="Finish">
+          <button className="danger-btn" disabled={!canStepSelectedItem} onClick={handleFinish} title="Finish">
             <Square size={16} /> Finish
           </button>
         </div>
