@@ -142,6 +142,7 @@ export default function ControlPage() {
   const liveReferenceOutput = mainOutput?.currentItem ? mainOutput : stageOutput?.currentItem ? stageOutput : liveState;
   const liveProgramItemId = liveReferenceOutput?.currentItem?.id || null;
   const hasLiveItem = Boolean(mainOutput?.currentItem || stageOutput?.currentItem || liveState?.currentItem);
+  const canStepSelectedItem = Boolean(selectedItem && hasLiveItem && liveProgramItemId === selectedItem.id);
 
   useEffect(() => {
     let mounted = true;
@@ -692,10 +693,10 @@ export default function ControlPage() {
         </div>
 
         <div className="toolbar">
-          <button className="previous-btn" disabled={!hasLiveItem} onClick={() => api.previous()} title="Previous">
+          <button className="previous-btn" disabled={!canStepSelectedItem} onClick={() => api.previous()} title="Previous">
             <ChevronLeft size={18} /> Previous
           </button>
-          <button className="primary-btn" disabled={!hasLiveItem} onClick={() => api.next()} title="Next">
+          <button className="primary-btn" disabled={!canStepSelectedItem} onClick={() => api.next()} title="Next">
             Next <ChevronRight size={18} />
           </button>
           <button className="danger-btn" disabled={!hasLiveItem && !selectedItem} onClick={handleFinish} title="Finish">
