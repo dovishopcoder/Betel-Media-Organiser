@@ -278,6 +278,12 @@ export default function ControlPage() {
     setServerSlides(null);
   }
 
+  function handleOpenFinishedBlock(item: ProgramItem) {
+    setFinishedItemIds((current) => current.filter((itemId) => itemId !== item.id));
+    setSelectedItemId(item.id);
+    setPreparedSlideIndex(0);
+  }
+
   async function handleProgramItemSongChange(item: ProgramItem, songId: number | null) {
     setItemFileStatus((current) => ({ ...current, [item.id]: "Se salveaza cantarea..." }));
     const response = await api.updateProgramItem(item.id, { songId });
@@ -544,6 +550,12 @@ export default function ControlPage() {
                       <small>{isFinishedBlock ? "Finalizat" : itemLabels[item.type] || item.type}</small>
                     </div>
                   </button>
+
+                  {isFinishedBlock ? (
+                    <button className="open-finished-block" onClick={() => handleOpenFinishedBlock(item)}>
+                      Deschide blocul
+                    </button>
+                  ) : null}
 
                   {!isCollapsedBlock && item.type === "song" ? (
                     <div className="song-block-controls">

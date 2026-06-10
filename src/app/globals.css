@@ -235,6 +235,16 @@ button:disabled {
   margin-top: 2px;
 }
 
+.open-finished-block {
+  background: #fff;
+  border: 1px solid #d7e2df;
+  border-radius: 6px;
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 28px;
+}
+
 .song-block-controls {
   border-top: 1px solid #edf0f3;
   display: grid;
