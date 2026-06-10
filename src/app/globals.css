@@ -196,8 +196,16 @@ button:disabled {
 }
 
 .control-program-block.active {
+  background: #f7fcfa;
   border-color: var(--accent);
-  box-shadow: inset 3px 0 0 var(--accent);
+  border-width: 2px;
+  box-shadow: inset 4px 0 0 var(--accent), 0 2px 8px rgba(15, 118, 95, 0.14);
+  padding: 7px;
+}
+
+.control-program-block.active .block-head > span {
+  background: var(--accent);
+  color: #fff;
 }
 
 .block-head {
