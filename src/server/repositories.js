@@ -34,6 +34,7 @@ function mapProgramItem(row) {
     songId: row.song_id,
     filePath: row.file_path,
     audioFilePath: row.audio_file_path,
+    backgroundFilePath: row.background_file_path,
     notes: row.notes,
     sortOrder: row.sort_order,
     song: row.song_title
@@ -57,6 +58,36 @@ function mapProgram(row) {
 }
 
 function createSlidesForItem(item) {
+  if (item.type === "offering") {
+    const slides = [];
+    if (item.filePath) {
+      slides.push({
+        id: `${item.id}-offering-video`,
+        type: "video",
+        label: "video",
+        title: item.title,
+        body: item.notes || item.title,
+        filePath: item.filePath,
+        notes: item.notes || "",
+        sortOrder: 0
+      });
+    }
+    if (item.audioFilePath) {
+      slides.push({
+        id: `${item.id}-offering-audio`,
+        type: "audio",
+        label: "daruri",
+        title: item.title,
+        body: "Strangerea darurilor",
+        filePath: item.audioFilePath,
+        backgroundFilePath: item.backgroundFilePath || null,
+        notes: item.notes || "",
+        sortOrder: slides.length
+      });
+    }
+    if (slides.length > 0) return slides;
+  }
+
   if (item.type === "song" && item.filePath && isVideoPath(item.filePath)) {
     return [
       {
@@ -209,8 +240,8 @@ function createRepositories(db) {
     addItem(programId, input) {
       const maxOrder = db.prepare("SELECT COALESCE(MAX(sort_order), 0) as maxOrder FROM program_items WHERE program_id = ?").get(programId).maxOrder;
       const result = db.prepare(`
-        INSERT INTO program_items (program_id, item_type, title, song_id, file_path, audio_file_path, notes, sort_order)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO program_items (program_id, item_type, title, song_id, file_path, audio_file_path, background_file_path, notes, sort_order)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         programId,
         input.type,
@@ -218,6 +249,7 @@ function createRepositories(db) {
         input.songId || null,
         input.filePath || null,
         input.audioFilePath || null,
+        input.backgroundFilePath || null,
         input.notes || "",
         maxOrder + 1
       );
@@ -272,11 +304,28 @@ function createRepositories(db) {
       `).run(input.filePath || null, itemId);
       return programs.getItem(itemId);
     },
-    attachAudio(itemId, input) {
+    attachVideo(itemId, input) {
       db.prepare(`
         UPDATE program_items
-        SET file_path = NULL,
+        SET file_path = ?
+        WHERE id = ?
+      `).run(input.filePath || null, itemId);
+      return programs.getItem(itemId);
+    },
+    attachAudio(itemId, input) {
+      const existing = programs.getItem(itemId);
+      db.prepare(`
+        UPDATE program_items
+        SET file_path = CASE WHEN ? THEN NULL ELSE file_path END,
             audio_file_path = ?
+        WHERE id = ?
+      `).run(existing?.type === "offering" ? 0 : 1, input.filePath || null, itemId);
+      return programs.getItem(itemId);
+    },
+    attachBackground(itemId, input) {
+      db.prepare(`
+        UPDATE program_items
+        SET background_file_path = ?
         WHERE id = ?
       `).run(input.filePath || null, itemId);
       return programs.getItem(itemId);

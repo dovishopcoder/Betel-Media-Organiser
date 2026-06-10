@@ -7,6 +7,7 @@ export const itemLabels: Record<string, string> = {
   announcements: "Anunturi",
   video: "Video",
   audio: "Audio",
+  offering: "Daruri",
   pause: "Pauza",
   special: "Moment special"
 };
@@ -29,6 +30,7 @@ export const blockTemplates = [
   { type: "announcements", title: "Anunturi", notes: "Anunturi pentru biserica" },
   { type: "video", title: "Video", notes: "Fisier video" },
   { type: "audio", title: "Audio", notes: "Sunet fara continut pe ecrane" },
+  { type: "offering", title: "Daruri", notes: "Video intro / fonograma / fundal daruri" },
   { type: "pause", title: "Pauza", notes: "Fundal / repaus" },
   { type: "special", title: "Moment special", notes: "Moment special" }
 ];

@@ -11,6 +11,34 @@ type SongBlockMode = "lyrics" | "lyrics_audio" | "video" | "audio";
 
 function slidesForItem(item: ProgramItem | null): Slide[] {
   if (!item) return [];
+  if (item.type === "offering") {
+    const slides: Slide[] = [];
+    if (item.filePath) {
+      slides.push({
+        id: `${item.id}-offering-video`,
+        type: "video",
+        title: item.title,
+        label: "video",
+        body: item.notes || item.title,
+        filePath: item.filePath,
+        sortOrder: 0
+      });
+    }
+    if (item.audioFilePath) {
+      slides.push({
+        id: `${item.id}-offering-audio`,
+        type: "audio",
+        title: item.title,
+        label: "daruri",
+        body: "Strangerea darurilor",
+        filePath: item.audioFilePath,
+        backgroundFilePath: item.backgroundFilePath || null,
+        sortOrder: slides.length
+      });
+    }
+    if (slides.length > 0) return slides;
+  }
+
   if (item.type === "song" && item.filePath && isVideoPath(item.filePath)) {
     return [{
       id: `${item.id}-karaoke-video`,
@@ -146,7 +174,13 @@ export default function ControlPage() {
         filePath: selectedItem.filePath
       }
     : null;
-  const centerAudio = activeAudio || selectedSongAudio || selectedBlockAudio;
+  const selectedOfferingAudio = selectedItem?.type === "offering" && selectedItem.audioFilePath
+    ? {
+        title: `Fonograma - ${selectedItem.title}`,
+        filePath: selectedItem.audioFilePath
+      }
+    : null;
+  const centerAudio = activeAudio || selectedSongAudio || selectedBlockAudio || selectedOfferingAudio;
   const mainVideoLive = mainOutput?.activeOutput === "program" && mainOutput.currentSlide?.type === "video" && mainOutput.currentSlide.filePath;
   const stageVideoLive = stageOutput?.activeOutput === "program" && stageOutput.currentSlide?.type === "video" && stageOutput.currentSlide.filePath;
   const activeVideo = mainVideoLive
@@ -267,6 +301,39 @@ export default function ControlPage() {
     }));
     await refresh();
     setSelectedItemId(item.id);
+  }
+
+  async function handleOfferingFileUpload(item: ProgramItem, kind: "video" | "audio" | "background", file: File | null) {
+    if (!file) return;
+    const labels = {
+      video: "Se copiaza video-ul...",
+      audio: "Se copiaza fonograma...",
+      background: "Se copiaza fundalul..."
+    };
+    setItemFileStatus((current) => ({ ...current, [item.id]: labels[kind] }));
+
+    const response = kind === "video"
+      ? await api.attachOfferingVideo(item.id, file)
+      : kind === "background"
+        ? await api.attachOfferingBackground(item.id, file)
+        : await api.attachProgramItemAudio(item.id, file);
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: "Nu s-a putut salva fisierul." }));
+      setItemFileStatus((current) => ({ ...current, [item.id]: error.error }));
+      return;
+    }
+
+    await refresh();
+    setSelectedItemId(item.id);
+    setItemFileStatus((current) => ({
+      ...current,
+      [item.id]: kind === "video"
+        ? "Video-ul a fost atasat."
+        : kind === "background"
+          ? "Fundalul pentru daruri a fost atasat."
+          : "Fonograma a fost atasata."
+    }));
   }
 
   function handlePrepareItem(item: ProgramItem, target: OutputTarget = "both") {
@@ -731,6 +798,53 @@ export default function ControlPage() {
                       })()}
                     </div>
                   ) : null}
+
+                  {!isCollapsedBlock && item.type === "offering" ? (
+                    <div className="song-block-controls">
+                      <div className="block-file-row single">
+                        <label className={`asset-pill ${item.filePath ? "ready" : ""}`}>
+                          Video inceput
+                          <input
+                            accept="video/*,.mp4,.webm,.mov,.mkv,.avi"
+                            type="file"
+                            onChange={(event) => handleOfferingFileUpload(item, "video", event.target.files?.[0] || null)}
+                          />
+                        </label>
+                      </div>
+
+                      <div className="block-file-row single">
+                        <label className={`asset-pill ${item.audioFilePath ? "ready" : ""}`}>
+                          Fonograma daruri
+                          <input
+                            accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac"
+                            type="file"
+                            onChange={(event) => handleOfferingFileUpload(item, "audio", event.target.files?.[0] || null)}
+                          />
+                        </label>
+                      </div>
+
+                      <div className="block-file-row single">
+                        <label className={`asset-pill ${item.backgroundFilePath ? "ready" : ""}`}>
+                          Fundal daruri
+                          <input
+                            accept="image/*,.jpg,.jpeg,.png,.webp,.gif"
+                            type="file"
+                            onChange={(event) => handleOfferingFileUpload(item, "background", event.target.files?.[0] || null)}
+                          />
+                        </label>
+                      </div>
+
+                      <div className="output-target-row block-output-row" aria-label="Alege ecranul pentru bloc">
+                        <button className={selectedItem?.id === item.id && preparedTarget === "main" ? "active" : ""} onClick={() => handlePrepareItem(item, "main")}>Sala</button>
+                        <button className={selectedItem?.id === item.id && preparedTarget === "stage" ? "active" : ""} onClick={() => handlePrepareItem(item, "stage")}>Scena</button>
+                        <button className={selectedItem?.id === item.id && preparedTarget === "both" ? "active" : ""} onClick={() => handlePrepareItem(item, "both")}>Ambele</button>
+                      </div>
+
+                      <div className="program-asset-status">
+                        {itemFileStatus[item.id] || `${item.filePath ? "video" : "fara video"} / ${item.audioFilePath ? "fonograma" : "fara fonograma"} / ${item.backgroundFilePath ? "fundal daruri" : "fara fundal"}`}
+                      </div>
+                    </div>
+                  ) : null}
                 </article>
                 );
               })
@@ -889,11 +1003,11 @@ export default function ControlPage() {
               <span className="item-type">Ecran principal</span>
               <a className="muted" href="/main-screen" target="_blank">Deschide</a>
             </div>
-            <div className={`screen-preview main-preview ${mainOutput?.activeOutput === "background" ? "idle" : ""}`}>
-              {mainOutput?.activeOutput === "background" || !mainOutput?.currentSlide ? (
+            <div className={`screen-preview main-preview ${mainOutput?.activeOutput === "background" || mainOutput?.currentSlide?.type === "audio" ? "idle" : ""}`}>
+              {mainOutput?.activeOutput === "background" || !mainOutput?.currentSlide || mainOutput.currentSlide.type === "audio" ? (
                 <div
                   className="screen-preview-background"
-                  style={{ backgroundImage: `url("${background.url}")` }}
+                  style={{ backgroundImage: `url("${mainOutput?.currentSlide?.type === "audio" && mainOutput.currentSlide.backgroundFilePath ? mainOutput.currentSlide.backgroundFilePath : background.url}")` }}
                 />
               ) : (
                 mainOutput.currentSlide.type === "presentation" && mainOutput.currentSlide.filePath ? (
@@ -916,11 +1030,11 @@ export default function ControlPage() {
               <span className="item-type">Ecran scena</span>
               <a className="muted" href="/stage-screen" target="_blank">Deschide</a>
             </div>
-            <div className={`screen-preview main-preview ${stageOutput?.activeOutput === "background" ? "idle" : ""}`}>
-              {stageOutput?.activeOutput === "background" || !stageOutput?.currentSlide ? (
+            <div className={`screen-preview main-preview ${stageOutput?.activeOutput === "background" || stageOutput?.currentSlide?.type === "audio" ? "idle" : ""}`}>
+              {stageOutput?.activeOutput === "background" || !stageOutput?.currentSlide || stageOutput.currentSlide.type === "audio" ? (
                 <div
                   className="screen-preview-background"
-                  style={{ backgroundImage: `url("${background.url}")` }}
+                  style={{ backgroundImage: `url("${stageOutput?.currentSlide?.type === "audio" && stageOutput.currentSlide.backgroundFilePath ? stageOutput.currentSlide.backgroundFilePath : background.url}")` }}
                 />
               ) : (
                 stageOutput.currentSlide.type === "presentation" && stageOutput.currentSlide.filePath ? (

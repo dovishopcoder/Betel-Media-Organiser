@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS program_items (
   song_id INTEGER,
   file_path TEXT,
   audio_file_path TEXT,
+  background_file_path TEXT,
   notes TEXT,
   sort_order INTEGER NOT NULL,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,

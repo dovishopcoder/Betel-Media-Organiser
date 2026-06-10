@@ -187,7 +187,7 @@ app.prepare().then(() => {
     try {
       const item = repos.programs.getItem(Number(req.params.itemId));
       if (!item) return res.status(404).json({ error: "Program item not found" });
-      if (!["song", "solo_song"].includes(item.type)) return res.status(400).json({ error: "Fisierul audio poate fi atasat doar la o cantare." });
+      if (!["song", "solo_song", "offering"].includes(item.type)) return res.status(400).json({ error: "Fisierul audio poate fi atasat doar la o cantare sau Daruri." });
       if (!req.file) return res.status(400).json({ error: "Alege un fisier audio." });
 
       if (!isAllowedMedia({ fileName: req.file.originalname, mediaType: "audio", mimeType: req.file.mimetype })) {
@@ -211,7 +211,7 @@ app.prepare().then(() => {
   expressApp.delete("/api/program-items/:itemId/audio", (req, res) => {
     const item = repos.programs.getItem(Number(req.params.itemId));
     if (!item) return res.status(404).json({ error: "Program item not found" });
-    if (!["song", "solo_song"].includes(item.type)) return res.status(400).json({ error: "Fisierul audio poate fi sters doar de la o cantare." });
+    if (!["song", "solo_song", "offering"].includes(item.type)) return res.status(400).json({ error: "Fisierul audio poate fi sters doar de la o cantare sau Daruri." });
 
     const updatedItem = repos.programs.clearAudio(item.id);
     refreshProgramOrder();
@@ -252,6 +252,56 @@ app.prepare().then(() => {
     const updatedItem = repos.programs.clearFile(item.id);
     refreshProgramOrder();
     res.json({ item: updatedItem, program: liveState.programOrder });
+  });
+
+  expressApp.post("/api/program-items/:itemId/offering-video", mediaUpload.single("file"), (req, res) => {
+    try {
+      const item = repos.programs.getItem(Number(req.params.itemId));
+      if (!item) return res.status(404).json({ error: "Program item not found" });
+      if (item.type !== "offering") return res.status(400).json({ error: "Video-ul poate fi atasat doar la blocul Daruri." });
+      if (!req.file) return res.status(400).json({ error: "Alege fisierul video." });
+
+      if (!isAllowedMedia({ fileName: req.file.originalname, mediaType: "video", mimeType: req.file.mimetype })) {
+        fs.unlinkSync(req.file.path);
+        return res.status(400).json({ error: "Alege un fisier video acceptat." });
+      }
+
+      const updatedItem = repos.programs.attachVideo(item.id, {
+        filePath: `/media/library/${req.file.filename}`
+      });
+      refreshProgramOrder();
+      res.json({ item: updatedItem, program: liveState.programOrder });
+    } catch (error) {
+      if (req.file?.path && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  expressApp.post("/api/program-items/:itemId/offering-background", mediaUpload.single("file"), (req, res) => {
+    try {
+      const item = repos.programs.getItem(Number(req.params.itemId));
+      if (!item) return res.status(404).json({ error: "Program item not found" });
+      if (item.type !== "offering") return res.status(400).json({ error: "Fundalul poate fi atasat doar la blocul Daruri." });
+      if (!req.file) return res.status(400).json({ error: "Alege imaginea de fundal." });
+
+      if (!isAllowedMedia({ fileName: req.file.originalname, mediaType: "image", mimeType: req.file.mimetype })) {
+        fs.unlinkSync(req.file.path);
+        return res.status(400).json({ error: "Alege o imagine acceptata." });
+      }
+
+      const updatedItem = repos.programs.attachBackground(item.id, {
+        filePath: `/media/library/${req.file.filename}`
+      });
+      refreshProgramOrder();
+      res.json({ item: updatedItem, program: liveState.programOrder });
+    } catch (error) {
+      if (req.file?.path && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      res.status(400).json({ error: error.message });
+    }
   });
 
   expressApp.post("/api/media/program-item", (req, res) => {
@@ -390,6 +440,54 @@ app.prepare().then(() => {
     const outputs = {
       main: stepOutput(liveState.outputs.main),
       stage: stepOutput(liveState.outputs.stage)
+    };
+
+    liveState = {
+      ...liveState,
+      outputs,
+      ...(outputs.main || {}),
+      updatedAt: new Date().toISOString()
+    };
+    io.emit("live:update", liveState);
+    res.json(liveState);
+  });
+
+  expressApp.post("/api/live/advance-current", (req, res) => {
+    const { itemId, slideId } = req.body || {};
+    const expectedItemId = Number(itemId);
+
+    const advanceOutput = (output) => {
+      if (!output?.currentItem || output.activeOutput !== "program") {
+        return output;
+      }
+
+      if (output.currentItem.id !== expectedItemId || output.currentSlide?.id !== slideId) {
+        return output;
+      }
+
+      const slides = repos.slides.forProgramItem(output.currentItem);
+      if (output.currentSlideIndex >= slides.length - 1) {
+        return {
+          ...output,
+          currentSlide: null,
+          nextSlide: null,
+          activeOutput: "background"
+        };
+      }
+
+      const nextIndex = output.currentSlideIndex + 1;
+      return {
+        ...output,
+        currentSlideIndex: nextIndex,
+        currentSlide: slides[nextIndex] || null,
+        nextSlide: getNextSlide(slides, nextIndex),
+        activeOutput: slides[nextIndex] ? "program" : "background"
+      };
+    };
+
+    const outputs = {
+      main: advanceOutput(liveState.outputs.main),
+      stage: advanceOutput(liveState.outputs.stage)
     };
 
     liveState = {

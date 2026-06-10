@@ -21,12 +21,19 @@ const allowedTypes = {
     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     "application/vnd.ms-powerpoint",
     "application/pdf"
+  ],
+  image: [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif"
   ]
 };
 const allowedExtensions = {
   audio: [".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"],
   video: [".mp4", ".webm", ".ogg", ".mov", ".mkv", ".avi"],
-  presentation: [".ppt", ".pptx", ".pps", ".ppsx", ".pdf"]
+  presentation: [".ppt", ".pptx", ".pps", ".ppsx", ".pdf"],
+  image: [".jpg", ".jpeg", ".png", ".webp", ".gif"]
 };
 
 function ensureLibraryDir() {

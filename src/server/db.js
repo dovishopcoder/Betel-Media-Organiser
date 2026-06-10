@@ -34,6 +34,9 @@ function migrateDatabase(db) {
   if (!programItemColumns.includes("audio_file_path")) {
     db.exec("ALTER TABLE program_items ADD COLUMN audio_file_path TEXT;");
   }
+  if (!programItemColumns.includes("background_file_path")) {
+    db.exec("ALTER TABLE program_items ADD COLUMN background_file_path TEXT;");
+  }
 
   db.exec(`
     UPDATE program_items
@@ -66,8 +69,8 @@ function seedDatabase(db, options = {}) {
     VALUES (@title, @service_date, @service_type, 'active')
   `);
   const insertItem = db.prepare(`
-    INSERT INTO program_items (program_id, item_type, title, song_id, file_path, audio_file_path, notes, sort_order)
-    VALUES (@program_id, @item_type, @title, @song_id, @file_path, @audio_file_path, @notes, @sort_order)
+    INSERT INTO program_items (program_id, item_type, title, song_id, file_path, audio_file_path, background_file_path, notes, sort_order)
+    VALUES (@program_id, @item_type, @title, @song_id, @file_path, @audio_file_path, @background_file_path, @notes, @sort_order)
   `);
   const insertScreen = db.prepare(`
     INSERT OR IGNORE INTO screens (screen_key, title, route, role)
@@ -106,11 +109,11 @@ function seedDatabase(db, options = {}) {
       service_type: "serviciul_divin"
     }).lastInsertRowid;
 
-    insertItem.run({ program_id: programId, item_type: "song", title: "Cantare deschidere", song_id: songA, file_path: null, audio_file_path: null, notes: "Tempo moderat", sort_order: 1 });
-    insertItem.run({ program_id: programId, item_type: "prayer", title: "Rugaciune", song_id: null, file_path: null, audio_file_path: null, notes: "Microfon pastor", sort_order: 2 });
-    insertItem.run({ program_id: programId, item_type: "song", title: "Cantare speciala", song_id: songB, file_path: null, audio_file_path: null, notes: "Repeta refrenul", sort_order: 3 });
-    insertItem.run({ program_id: programId, item_type: "sermon", title: "Predica", song_id: null, file_path: null, audio_file_path: null, notes: "Timer 35 min", sort_order: 4 });
-    insertItem.run({ program_id: programId, item_type: "announcements", title: "Anunturi", song_id: null, file_path: null, audio_file_path: null, notes: "Afisare pe ecran principal", sort_order: 5 });
+    insertItem.run({ program_id: programId, item_type: "song", title: "Cantare deschidere", song_id: songA, file_path: null, audio_file_path: null, background_file_path: null, notes: "Tempo moderat", sort_order: 1 });
+    insertItem.run({ program_id: programId, item_type: "prayer", title: "Rugaciune", song_id: null, file_path: null, audio_file_path: null, background_file_path: null, notes: "Microfon pastor", sort_order: 2 });
+    insertItem.run({ program_id: programId, item_type: "song", title: "Cantare speciala", song_id: songB, file_path: null, audio_file_path: null, background_file_path: null, notes: "Repeta refrenul", sort_order: 3 });
+    insertItem.run({ program_id: programId, item_type: "sermon", title: "Predica", song_id: null, file_path: null, audio_file_path: null, background_file_path: null, notes: "Timer 35 min", sort_order: 4 });
+    insertItem.run({ program_id: programId, item_type: "announcements", title: "Anunturi", song_id: null, file_path: null, audio_file_path: null, background_file_path: null, notes: "Afisare pe ecran principal", sort_order: 5 });
 
     insertScreen.run({ screen_key: "main", title: "Ecran principal", route: "/main-screen", role: "audience" });
     insertScreen.run({ screen_key: "stage", title: "Ecran scena", route: "/stage-screen", role: "confidence" });

@@ -13,6 +13,7 @@ export type Slide = {
   title: string;
   body: string;
   filePath?: string | null;
+  backgroundFilePath?: string | null;
   notes?: string;
   sortOrder: number;
 };
@@ -25,6 +26,7 @@ export type ProgramItem = {
   songId?: number;
   filePath?: string;
   audioFilePath?: string;
+  backgroundFilePath?: string;
   notes?: string;
   sortOrder: number;
   song?: Song | null;

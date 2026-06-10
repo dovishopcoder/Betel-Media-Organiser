@@ -134,6 +134,24 @@ export function useLiveMedia() {
         method: "DELETE"
       });
     },
+    attachOfferingVideo(itemId: number, file: File) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      return fetch(`/api/program-items/${itemId}/offering-video`, {
+        method: "POST",
+        body: formData
+      });
+    },
+    attachOfferingBackground(itemId: number, file: File) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      return fetch(`/api/program-items/${itemId}/offering-background`, {
+        method: "POST",
+        body: formData
+      });
+    },
     updateProgramItem(itemId: number, input: { title?: string; songId?: number | null; notes?: string }) {
       return fetch(`/api/program-items/${itemId}`, {
         method: "PATCH",
