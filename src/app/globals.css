@@ -1108,6 +1108,15 @@ button:disabled {
   width: 100%;
 }
 
+.prepared-audio-placeholder {
+  background: #f6f8fb;
+  border: 1px dashed #c8d8e8;
+  border-radius: 6px;
+  color: #516173;
+  font-size: 13px;
+  padding: 10px;
+}
+
 .center-audio-panel {
   margin-top: 18px;
 }

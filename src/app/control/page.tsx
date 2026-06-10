@@ -790,7 +790,11 @@ export default function ControlPage() {
           <section className="audio-control-panel center-audio-panel">
             <div className="item-type">Player audio</div>
             <strong>{centerAudio.title}</strong>
-            <audio key={centerAudio.filePath} src={centerAudio.filePath || ""} controls autoPlay={Boolean(activeAudio)} />
+            {activeAudio ? (
+              <audio key={centerAudio.filePath} src={centerAudio.filePath || ""} controls autoPlay />
+            ) : (
+              <div className="prepared-audio-placeholder">Audio pregatit. Apasa Go Live pentru redare.</div>
+            )}
             <div className="muted">
               {activeAudio ? "Audio-ul este live acum." : "Audio pregatit pentru blocul selectat."}
             </div>
