@@ -43,10 +43,12 @@ Operator pe monitorul 2:
 Verifica monitoarele detectate:
    9_ARATA_MONITOARE.bat
 
-Configurare biserica:
-- DISPLAY1 = Sala
-- DISPLAY2 = Operator
-- DISPLAY3 = Scena
+Configurare recomandata:
+1. Intra in Setari -> Ecrane.
+2. Apasa Detecteaza din nou.
+3. Alege monitorul pentru Sala, Scena si Operator.
+4. Apasa Salveaza monitoarele.
+5. Dupa aceea butoanele fullscreen folosesc setarea salvata.
 
 UPDATE PRIN INTERNET
 Daca aplicatia a fost modificata pe GitHub:

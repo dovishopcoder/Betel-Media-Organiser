@@ -2,4 +2,4 @@
 setlocal
 cd /d "%~dp0"
 
-powershell -ExecutionPolicy Bypass -File "%~dp0scripts\launch-screen.ps1" -Route control -DisplayIndex 2
+powershell -ExecutionPolicy Bypass -File "%~dp0scripts\launch-screen.ps1" -Route control -Role control -DisplayIndex 2

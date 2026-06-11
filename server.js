@@ -11,6 +11,7 @@ const { createIdleOutputState, createInitialLiveState, createOutputState, getNex
 const { getMainBackground, saveMainBackground } = require("./src/server/backgrounds");
 const { detectMediaType, ensureLibraryDir, isAllowedMedia, sanitizeName, saveMediaFile } = require("./src/server/media-files");
 const { getServiceProgramTemplates, saveServiceProgramTemplate } = require("./src/server/service-templates");
+const { detectDisplays, getDisplaySettings, saveDisplaySettings } = require("./src/server/display-settings");
 
 const dev = process.env.NODE_ENV !== "production";
 const port = Number(process.env.PORT || 3000);
@@ -97,9 +98,29 @@ app.prepare().then(() => {
       screens: repos.screens.list(),
       background: getMainBackground(),
       serviceProgramTemplates: getServiceProgramTemplates(),
+      displaySettings: getDisplaySettings(),
       liveState,
       appVersion
     });
+  });
+
+  expressApp.get("/api/displays", (_req, res) => {
+    try {
+      res.json({
+        displays: detectDisplays(),
+        settings: getDisplaySettings()
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message, displays: [], settings: getDisplaySettings() });
+    }
+  });
+
+  expressApp.put("/api/display-settings", (req, res) => {
+    try {
+      res.json({ settings: saveDisplaySettings(req.body || {}) });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   });
 
   expressApp.put("/api/service-templates/:serviceType", (req, res) => {

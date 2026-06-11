@@ -46,9 +46,12 @@ Pentru verificarea monitoarelor:
 9_ARATA_MONITOARE.bat
 
 Configurare biserica:
-- DISPLAY1 = Sala
-- DISPLAY2 = Operator
-- DISPLAY3 = Scena
+In aplicatie intra in Setari -> Ecrane si alege:
+- monitorul pentru Sala
+- monitorul pentru Scena
+- monitorul pentru Operator
+
+Dupa salvare, butoanele fullscreen folosesc aceasta configurare.
 
 ACTUALIZARE PRIN INTERNET
 Daca noi modificam aplicatia de pe acest laptop si o punem pe GitHub, la biserica poti rula:

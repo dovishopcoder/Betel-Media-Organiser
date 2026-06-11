@@ -16,6 +16,7 @@ portable/
 data/*.db
 data/*.db-*
 data/service-templates.json
+data/display-settings.json
 media/*
 !media/.gitkeep
 

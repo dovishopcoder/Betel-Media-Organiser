@@ -2,6 +2,9 @@ param(
   [ValidateSet("main-screen", "stage-screen", "control")]
   [string]$Route = "main-screen",
 
+  [ValidateSet("", "main", "stage", "control")]
+  [string]$Role = "",
+
   [ValidateSet("primary", "secondary")]
   [string]$Display = "secondary",
 
@@ -20,6 +23,19 @@ Add-Type -AssemblyName System.Windows.Forms
 $screens = [System.Windows.Forms.Screen]::AllScreens
 
 $targetScreen = $null
+$settingsPath = Join-Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) "data\display-settings.json"
+if ($Role -and (Test-Path $settingsPath)) {
+  try {
+    $settings = Get-Content -LiteralPath $settingsPath -Raw | ConvertFrom-Json
+    $deviceName = [string]$settings.$Role
+    if ($deviceName) {
+      $targetScreen = $screens | Where-Object { $_.DeviceName -eq $deviceName } | Select-Object -First 1
+    }
+  } catch {
+    Write-Host "Nu s-au putut citi setarile monitoarelor: $($_.Exception.Message)"
+  }
+}
+
 if ($DisplayIndex -gt 0) {
   $targetScreen = $screens | Where-Object { $_.DeviceName -match "DISPLAY$DisplayIndex$" } | Select-Object -First 1
   if (-not $targetScreen -and $screens.Length -ge $DisplayIndex) {

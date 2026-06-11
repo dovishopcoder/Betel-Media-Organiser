@@ -1,12 +1,31 @@
 "use client";
 
 import { ImageUp, Monitor } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLiveMedia } from "@/hooks/useLiveMedia";
+import type { DisplayInfo, DisplaySettings } from "@/shared/types";
 
 export default function ScreensSettingsPage() {
-  const { background, loading, api } = useLiveMedia();
+  const { background, displaySettings, loading, api } = useLiveMedia();
   const [backgroundStatus, setBackgroundStatus] = useState("");
+  const [displays, setDisplays] = useState<DisplayInfo[]>([]);
+  const [screenSettings, setScreenSettings] = useState<DisplaySettings>({ main: "", stage: "", control: "" });
+  const [displayStatus, setDisplayStatus] = useState("");
+
+  async function loadDisplays() {
+    setDisplayStatus("Se detecteaza monitoarele...");
+    const payload = await api.getDisplays();
+    setDisplays(payload.displays || []);
+    setScreenSettings(payload.settings || displaySettings || { main: "", stage: "", control: "" });
+    setDisplayStatus(payload.displays?.length ? "Monitoarele au fost detectate." : "Nu s-au gasit monitoare prin aplicatie.");
+  }
+
+  useEffect(() => {
+    if (!loading) {
+      setScreenSettings(displaySettings || { main: "", stage: "", control: "" });
+      loadDisplays();
+    }
+  }, [loading]);
 
   async function handleBackgroundUpload(file: File | null) {
     if (!file) return;
@@ -30,6 +49,25 @@ export default function ScreensSettingsPage() {
     reader.readAsDataURL(file);
   }
 
+  async function handleSaveDisplays() {
+    setDisplayStatus("Se salveaza rolurile monitoarelor...");
+    const response = await api.saveDisplaySettings(screenSettings);
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: "Nu s-au putut salva monitoarele." }));
+      setDisplayStatus(error.error);
+      return;
+    }
+    setDisplayStatus("Rolurile monitoarelor au fost salvate.");
+  }
+
+  const displayOptions = [
+    { value: "", label: "Alege monitor" },
+    ...displays.map((display) => ({
+      value: display.deviceName,
+      label: `${display.deviceName.replace("\\\\.\\", "")}${display.primary ? " - principal" : ""} (${display.width}x${display.height}, ${display.x},${display.y})`
+    }))
+  ];
+
   if (loading) {
     return <div className="settings-card muted">Se incarca ecranele...</div>;
   }
@@ -45,6 +83,46 @@ export default function ScreensSettingsPage() {
       </div>
 
       <div className="settings-two-column">
+        <div className="settings-card">
+          <div className="item-type">Monitoare detectate</div>
+          <div className="display-list">
+            {displays.length ? displays.map((display) => (
+              <div className="display-row" key={display.deviceName}>
+                <strong>{display.deviceName.replace("\\\\.\\", "")}</strong>
+                <span>{display.primary ? "Principal" : "Extins"} / {display.width}x{display.height} / pozitie {display.x},{display.y}</span>
+              </div>
+            )) : (
+              <div className="muted">Nu sunt monitoare detectate inca.</div>
+            )}
+          </div>
+          <button className="ghost-btn" onClick={loadDisplays}>Detecteaza din nou</button>
+          <div className="muted">{displayStatus}</div>
+        </div>
+
+        <div className="settings-card">
+          <div className="item-type">Roluri monitoare</div>
+          <label className="settings-field">
+            <span>Sala</span>
+            <select value={screenSettings.main} onChange={(event) => setScreenSettings((current) => ({ ...current, main: event.target.value }))}>
+              {displayOptions.map((option) => <option key={`main-${option.value}`} value={option.value}>{option.label}</option>)}
+            </select>
+          </label>
+          <label className="settings-field">
+            <span>Scena</span>
+            <select value={screenSettings.stage} onChange={(event) => setScreenSettings((current) => ({ ...current, stage: event.target.value }))}>
+              {displayOptions.map((option) => <option key={`stage-${option.value}`} value={option.value}>{option.label}</option>)}
+            </select>
+          </label>
+          <label className="settings-field">
+            <span>Operator</span>
+            <select value={screenSettings.control} onChange={(event) => setScreenSettings((current) => ({ ...current, control: event.target.value }))}>
+              {displayOptions.map((option) => <option key={`control-${option.value}`} value={option.value}>{option.label}</option>)}
+            </select>
+          </label>
+          <button className="primary-btn" onClick={handleSaveDisplays}>Salveaza monitoarele</button>
+          <div className="muted">Butoanele fullscreen vor folosi aceste roluri.</div>
+        </div>
+
         <div className="settings-card">
           <div className="item-type">Fundal repaus</div>
           <div className="background-preview settings-background-preview" style={{ backgroundImage: `url("${background.url}")` }} />
