@@ -41,6 +41,16 @@ RESET ECRANE
 Daca dupa pornire ramane ceva vechi pe ecran, ruleaza:
 7_RESETEAZA_ECRANE_FUNDAL.bat
 
+DIAGNOSTIC
+Daca aplicatia nu porneste, ruleaza:
+3B_PORNESTE_CU_FEREASTRA_DE_ERORI.bat
+
+Daca trebuie sa trimiti detalii pentru verificare, ruleaza:
+8_DIAGNOSTIC_BETEL_MEDIA.bat
+
+Acesta creeaza fisierul:
+diagnostic-betel-media.txt
+
 IMPORTANT
 - Pe calculatorul bisericii trebuie instalat Node.js LTS:
   https://nodejs.org/

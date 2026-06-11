@@ -115,6 +115,24 @@ If an old slide remains visible after startup, run:
 This sends both outputs back to the idle background without changing the saved
 program.
 
+## Diagnostics
+
+If the app does not start, run:
+
+```text
+3B_PORNESTE_CU_FEREASTRA_DE_ERORI.bat
+```
+
+This starts the server in a visible window so the error can be photographed.
+
+For a text diagnostic file, run:
+
+```text
+8_DIAGNOSTIC_BETEL_MEDIA.bat
+```
+
+It creates `diagnostic-betel-media.txt` in the app folder.
+
 ## Move Existing Local Data
 
 The app stores church data locally. To move the same setup to another computer,
