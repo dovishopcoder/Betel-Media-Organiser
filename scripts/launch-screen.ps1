@@ -7,6 +7,9 @@ param(
 
   [int]$DisplayIndex = 0,
 
+  [ValidateSet("", "left", "right", "top", "bottom")]
+  [string]$DisplayPosition = "",
+
   [switch]$Kiosk,
 
   [int]$Port = 3000
@@ -21,6 +24,16 @@ if ($DisplayIndex -gt 0) {
   $targetScreen = $screens | Where-Object { $_.DeviceName -match "DISPLAY$DisplayIndex$" } | Select-Object -First 1
   if (-not $targetScreen -and $screens.Length -ge $DisplayIndex) {
     $targetScreen = $screens[$DisplayIndex - 1]
+  }
+}
+
+if (-not $targetScreen -and $DisplayPosition) {
+  $targetScreen = switch ($DisplayPosition) {
+    "left" { $screens | Sort-Object { $_.Bounds.X } | Select-Object -First 1 }
+    "right" { $screens | Sort-Object { $_.Bounds.X } -Descending | Select-Object -First 1 }
+    "top" { $screens | Sort-Object { $_.Bounds.Y } | Select-Object -First 1 }
+    "bottom" { $screens | Sort-Object { $_.Bounds.Y } -Descending | Select-Object -First 1 }
+    default { $null }
   }
 }
 

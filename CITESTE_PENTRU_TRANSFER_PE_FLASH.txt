@@ -29,6 +29,13 @@ FULLSCREEN
 Pentru ecran sala poti rula:
 4_DESCHIDE_ECRAN_SALA_FULLSCREEN.bat
 
+Daca sala se deschide pe monitor gresit, testeaza:
+4A_SALA_PE_MONITOR_1.bat
+4B_SALA_PE_MONITOR_2.bat
+4C_SALA_PE_MONITOR_3.bat
+4D_SALA_PE_MONITOR_STANGA.bat
+4E_SALA_PE_MONITOR_DREAPTA.bat
+
 Pentru ecran scena poti rula:
 5_DESCHIDE_ECRAN_SCENA_FULLSCREEN.bat
 
