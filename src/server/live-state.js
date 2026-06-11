@@ -1,5 +1,3 @@
-const { createSlidesForItem } = require("./repositories");
-
 const idleSlide = {
   id: "idle-background",
   type: "idle",
@@ -28,21 +26,19 @@ function createOutputState(item, slides, slideIndex) {
 
 function createInitialLiveState(repos) {
   const activeProgram = repos.programs.getActiveWithItems();
-  const firstItem = activeProgram?.items?.[0] || null;
-  const slides = firstItem ? createSlidesForItem(firstItem) : [];
-  const mainOutput = createOutputState(firstItem, slides, 0);
+  const idleOutput = {
+    currentItem: null,
+    currentSlideIndex: 0,
+    currentSlide: null,
+    nextSlide: null,
+    activeOutput: "background"
+  };
 
   return {
-    ...mainOutput,
+    ...idleOutput,
     outputs: {
-      main: mainOutput,
-      stage: {
-        currentItem: null,
-        currentSlideIndex: 0,
-        currentSlide: null,
-        nextSlide: null,
-        activeOutput: "background"
-      }
+      main: idleOutput,
+      stage: idleOutput
     },
     timer: {
       startedAt: null,
