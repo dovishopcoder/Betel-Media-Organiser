@@ -24,15 +24,19 @@ function createOutputState(item, slides, slideIndex) {
   };
 }
 
-function createInitialLiveState(repos) {
-  const activeProgram = repos.programs.getActiveWithItems();
-  const idleOutput = {
+function createIdleOutputState() {
+  return {
     currentItem: null,
     currentSlideIndex: 0,
     currentSlide: null,
     nextSlide: null,
     activeOutput: "background"
   };
+}
+
+function createInitialLiveState(repos) {
+  const activeProgram = repos.programs.getActiveWithItems();
+  const idleOutput = createIdleOutputState();
 
   return {
     ...idleOutput,
@@ -52,6 +56,7 @@ function createInitialLiveState(repos) {
 
 module.exports = {
   createOutputState,
+  createIdleOutputState,
   createInitialLiveState,
   getNextSlide,
   idleSlide

@@ -104,6 +104,17 @@ The update keeps local church data:
 It replaces the application files with the latest version from GitHub, runs
 `npm install`, and starts the control panel again.
 
+## Reset Screens
+
+If an old slide remains visible after startup, run:
+
+```text
+7_RESETEAZA_ECRANE_FUNDAL.bat
+```
+
+This sends both outputs back to the idle background without changing the saved
+program.
+
 ## Move Existing Local Data
 
 The app stores church data locally. To move the same setup to another computer,

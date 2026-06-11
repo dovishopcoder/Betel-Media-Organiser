@@ -37,6 +37,10 @@ Acest fisier descarca ultima versiune de pe GitHub si pastreaza datele locale:
 - data/
 - media/
 
+RESET ECRANE
+Daca dupa pornire ramane ceva vechi pe ecran, ruleaza:
+7_RESETEAZA_ECRANE_FUNDAL.bat
+
 IMPORTANT
 - Pe calculatorul bisericii trebuie instalat Node.js LTS:
   https://nodejs.org/

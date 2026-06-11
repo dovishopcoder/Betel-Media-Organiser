@@ -7,7 +7,7 @@ const next = require("next");
 const { Server } = require("socket.io");
 const { ensureDatabase, getDb } = require("./src/server/db");
 const { createRepositories } = require("./src/server/repositories");
-const { createInitialLiveState, createOutputState, getNextSlide } = require("./src/server/live-state");
+const { createIdleOutputState, createInitialLiveState, createOutputState, getNextSlide } = require("./src/server/live-state");
 const { getMainBackground, saveMainBackground } = require("./src/server/backgrounds");
 const { detectMediaType, ensureLibraryDir, isAllowedMedia, sanitizeName, saveMediaFile } = require("./src/server/media-files");
 const { getServiceProgramTemplates, saveServiceProgramTemplate } = require("./src/server/service-templates");
@@ -519,6 +519,19 @@ app.prepare().then(() => {
       ...liveState,
       outputs,
       ...(outputs.main || {}),
+      updatedAt: new Date().toISOString()
+    };
+    io.emit("live:update", liveState);
+    res.json(liveState);
+  });
+
+  expressApp.post("/api/live/reset", (_req, res) => {
+    const main = createIdleOutputState();
+    const stage = createIdleOutputState();
+    liveState = {
+      ...liveState,
+      ...main,
+      outputs: { main, stage },
       updatedAt: new Date().toISOString()
     };
     io.emit("live:update", liveState);
