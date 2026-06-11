@@ -586,7 +586,7 @@ export default function ControlPage() {
           <a className="muted" href="/settings">Setari</a>
         </div>
         <div className="update-test-badge">
-          Actualizare: {appVersion}
+          Versiune: {appVersion}
         </div>
         <section className={`control-service-picker ${servicePickerOpen || pendingServiceType !== selectedServiceType ? "open" : ""}`}>
           <button className="service-compact-btn" onClick={() => setServicePickerOpen((value) => !value)}>

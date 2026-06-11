@@ -1,5 +1,8 @@
 BETEL MEDIA - TRANSFER PE FLASH
 
+Pentru instalarea la biserica, incepe cu:
+0_START_AICI_BISERICA.txt
+
 PE LAPTOPUL TAU
 1. Ruleaza: 1_CREAZA_PACHET_PENTRU_FLASH.bat
 2. Se va deschide folderul portable.

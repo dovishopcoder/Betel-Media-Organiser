@@ -1,0 +1,51 @@
+BETEL MEDIA - START AICI
+
+PE CALCULATORUL DE LA BISERICA
+
+1. Copiaza ZIP-ul pe Desktop sau in Documents.
+2. Click dreapta pe ZIP -> Extract All / Extrage tot.
+3. Intra in folderul extras.
+4. Ruleaza o singura data:
+   2_INSTALEAZA_PE_CALCULATORUL_BISERICII.bat
+5. Porneste aplicatia cu:
+   3_PORNESTE_BETEL_MEDIA.bat
+
+Daca aplicatia nu porneste sau vrei sa vezi erorile:
+   3B_PORNESTE_CU_FEREASTRA_DE_ERORI.bat
+
+LINKURI
+Panou operator:
+http://localhost:3000/control
+
+Ecran sala:
+http://localhost:3000/main-screen
+
+Ecran scena:
+http://localhost:3000/stage-screen
+
+FULLSCREEN
+Sala:
+   4_DESCHIDE_ECRAN_SALA_FULLSCREEN.bat
+
+Scena:
+   5_DESCHIDE_ECRAN_SCENA_FULLSCREEN.bat
+
+UPDATE PRIN INTERNET
+Daca aplicatia a fost modificata pe GitHub:
+   6_ACTUALIZEAZA_DIN_INTERNET.bat
+
+Daca interfata nu se schimba dupa update:
+   6B_REPARA_ACTUALIZAREA_DIN_INTERNET.bat
+
+RESET ECRANE
+Daca ramane ceva vechi pe ecrane:
+   7_RESETEAZA_ECRANE_FUNDAL.bat
+
+DIAGNOSTIC
+Daca trebuie trimise detalii:
+   8_DIAGNOSTIC_BETEL_MEDIA.bat
+
+IMPORTANT
+- Trebuie instalat Node.js LTS de la https://nodejs.org/
+- Prima instalare are nevoie de internet pentru npm install.
+- Aplicatia ruleaza local pe calculator la localhost:3000.
