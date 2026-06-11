@@ -30,6 +30,17 @@ Sala:
 Scena:
    5_DESCHIDE_ECRAN_SCENA_FULLSCREEN.bat
 
+Operator pe monitorul 2:
+   3C_DESCHIDE_CONTROL_OPERATOR.bat
+
+Verifica monitoarele detectate:
+   9_ARATA_MONITOARE.bat
+
+Configurare biserica:
+- DISPLAY1 = Sala
+- DISPLAY2 = Operator
+- DISPLAY3 = Scena
+
 UPDATE PRIN INTERNET
 Daca aplicatia a fost modificata pe GitHub:
    6_ACTUALIZEAZA_DIN_INTERNET.bat

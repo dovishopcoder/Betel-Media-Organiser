@@ -32,6 +32,17 @@ Pentru ecran sala poti rula:
 Pentru ecran scena poti rula:
 5_DESCHIDE_ECRAN_SCENA_FULLSCREEN.bat
 
+Pentru operator pe monitorul 2 poti rula:
+3C_DESCHIDE_CONTROL_OPERATOR.bat
+
+Pentru verificarea monitoarelor:
+9_ARATA_MONITOARE.bat
+
+Configurare biserica:
+- DISPLAY1 = Sala
+- DISPLAY2 = Operator
+- DISPLAY3 = Scena
+
 ACTUALIZARE PRIN INTERNET
 Daca noi modificam aplicatia de pe acest laptop si o punem pe GitHub, la biserica poti rula:
 6_ACTUALIZEAZA_DIN_INTERNET.bat

@@ -9,8 +9,8 @@
     "db:init": "node scripts/init-db.js",
     "package:portable": "powershell -ExecutionPolicy Bypass -File scripts/make-portable.ps1",
     "start:windows": "powershell -ExecutionPolicy Bypass -File scripts/start-app.ps1",
-    "screen:main": "powershell -ExecutionPolicy Bypass -File scripts/launch-screen.ps1 -Route main-screen -Display secondary -Kiosk",
-    "screen:stage": "powershell -ExecutionPolicy Bypass -File scripts/launch-screen.ps1 -Route stage-screen -Display primary -Kiosk"
+    "screen:main": "powershell -ExecutionPolicy Bypass -File scripts/launch-screen.ps1 -Route main-screen -DisplayIndex 1 -Kiosk",
+    "screen:stage": "powershell -ExecutionPolicy Bypass -File scripts/launch-screen.ps1 -Route stage-screen -DisplayIndex 3 -Kiosk"
   },
   "dependencies": {
     "adm-zip": "^0.5.17",

@@ -5,6 +5,8 @@ param(
   [ValidateSet("primary", "secondary")]
   [string]$Display = "secondary",
 
+  [int]$DisplayIndex = 0,
+
   [switch]$Kiosk,
 
   [int]$Port = 3000
@@ -13,15 +15,32 @@ param(
 Add-Type -AssemblyName System.Windows.Forms
 
 $screens = [System.Windows.Forms.Screen]::AllScreens
-$targetScreen = if ($Display -eq "primary") {
-  $screens | Where-Object { $_.Primary } | Select-Object -First 1
-} else {
-  $screens | Where-Object { -not $_.Primary } | Select-Object -First 1
+
+$targetScreen = $null
+if ($DisplayIndex -gt 0) {
+  $targetScreen = $screens | Where-Object { $_.DeviceName -match "DISPLAY$DisplayIndex$" } | Select-Object -First 1
+  if (-not $targetScreen -and $screens.Length -ge $DisplayIndex) {
+    $targetScreen = $screens[$DisplayIndex - 1]
+  }
+}
+
+if (-not $targetScreen) {
+  $targetScreen = if ($Display -eq "primary") {
+    $screens | Where-Object { $_.Primary } | Select-Object -First 1
+  } else {
+    $screens | Where-Object { -not $_.Primary } | Select-Object -First 1
+  }
 }
 
 if (-not $targetScreen) {
   $targetScreen = $screens | Select-Object -First 1
 }
+
+if (-not $targetScreen) {
+  throw "Nu s-a gasit niciun monitor conectat."
+}
+
+Write-Host "Se deschide $Route pe $($targetScreen.DeviceName) la $($targetScreen.Bounds.X),$($targetScreen.Bounds.Y) $($targetScreen.Bounds.Width)x$($targetScreen.Bounds.Height)"
 
 $edgeCandidates = @(
   "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe",
