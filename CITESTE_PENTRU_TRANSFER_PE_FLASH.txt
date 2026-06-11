@@ -1,0 +1,37 @@
+BETEL MEDIA - TRANSFER PE FLASH
+
+PE LAPTOPUL TAU
+1. Ruleaza: 1_CREAZA_PACHET_PENTRU_FLASH.bat
+2. Se va deschide folderul portable.
+3. Copiaza cel mai nou fisier .zip pe flash.
+
+PE CALCULATORUL DE LA BISERICA
+1. Copiaza fisierul .zip de pe flash pe Desktop sau in Documents.
+2. Click dreapta pe .zip si alege Extract All / Extrage tot.
+3. Intra in folderul extras.
+4. Ruleaza o singura data: 2_INSTALEAZA_PE_CALCULATORUL_BISERICII.bat
+5. Dupa instalare, porneste aplicatia cu: 3_PORNESTE_BETEL_MEDIA.bat
+
+LINKURI
+Panou operator:
+http://localhost:3000/control
+
+Ecran sala:
+http://localhost:3000/main-screen
+
+Ecran scena:
+http://localhost:3000/stage-screen
+
+FULLSCREEN
+Pentru ecran sala poti rula:
+4_DESCHIDE_ECRAN_SALA_FULLSCREEN.bat
+
+Pentru ecran scena poti rula:
+5_DESCHIDE_ECRAN_SCENA_FULLSCREEN.bat
+
+IMPORTANT
+- Pe calculatorul bisericii trebuie instalat Node.js LTS:
+  https://nodejs.org/
+- Prima instalare are nevoie de internet pentru npm install.
+- Dupa instalare, aplicatia ruleaza local pe calculator.
+- Daca pagina nu se incarca dupa restart, ruleaza din nou 3_PORNESTE_BETEL_MEDIA.bat.

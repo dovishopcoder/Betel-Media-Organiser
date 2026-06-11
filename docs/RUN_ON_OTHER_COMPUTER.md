@@ -24,6 +24,14 @@ Use this option when you want to carry the app on a USB stick.
 
 On the current computer:
 
+Double click:
+
+```text
+1_CREAZA_PACHET_PENTRU_FLASH.bat
+```
+
+Or run manually:
+
 ```powershell
 npm run package:portable
 ```
@@ -32,6 +40,13 @@ This creates a ZIP file in `portable/`. Copy that ZIP file to the church
 computer, unzip it, then open PowerShell inside the unzipped folder.
 
 ## Install and Start
+
+On the church computer, inside the unzipped folder:
+
+1. Run `2_INSTALEAZA_PE_CALCULATORUL_BISERICII.bat` once.
+2. Run `3_PORNESTE_BETEL_MEDIA.bat` whenever you want to start the app.
+
+Manual commands:
 
 ```powershell
 npm install
@@ -50,11 +65,25 @@ Open manually if needed:
 
 ## Launch the HDMI Audience Screen
 
+Double click:
+
+```text
+4_DESCHIDE_ECRAN_SALA_FULLSCREEN.bat
+```
+
+Or run:
+
 ```powershell
 npm run screen:main
 ```
 
 Exit kiosk mode with `Alt + F4`.
+
+For the stage screen:
+
+```text
+5_DESCHIDE_ECRAN_SCENA_FULLSCREEN.bat
+```
 
 ## Move Existing Local Data
 
