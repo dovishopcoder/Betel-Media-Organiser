@@ -33,6 +33,9 @@ ACTUALIZARE PRIN INTERNET
 Daca noi modificam aplicatia de pe acest laptop si o punem pe GitHub, la biserica poti rula:
 6_ACTUALIZEAZA_DIN_INTERNET.bat
 
+In caz ca update-ul nu schimba interfata, ruleaza:
+6B_REPARA_ACTUALIZAREA_DIN_INTERNET.bat
+
 Acest fisier descarca ultima versiune de pe GitHub si pastreaza datele locale:
 - data/
 - media/

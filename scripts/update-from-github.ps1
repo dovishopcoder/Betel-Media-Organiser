@@ -46,16 +46,19 @@ if (-not $sourceRoot) {
   throw "Nu s-a gasit folderul extras din arhiva GitHub."
 }
 
-$excludedNames = @(".git", ".next", "node_modules", "portable", "data", "media")
+$preservedNames = @(".git", ".next", "node_modules", "portable", "data", "media", "logs")
 
 Write-Host "Se copiaza fisierele aplicatiei. Datele si media locale se pastreaza..."
 Get-ChildItem -LiteralPath $sourceRoot.FullName -Force | ForEach-Object {
-  if ($excludedNames -contains $_.Name) {
+  if ($preservedNames -contains $_.Name) {
     return
   }
 
   $destination = Join-Path $projectRoot $_.Name
   if ($_.PSIsContainer) {
+    if (Test-Path $destination) {
+      Remove-Item -LiteralPath $destination -Recurse -Force
+    }
     Copy-Item -LiteralPath $_.FullName -Destination $destination -Recurse -Force
   } else {
     Copy-Item -LiteralPath $_.FullName -Destination $destination -Force
