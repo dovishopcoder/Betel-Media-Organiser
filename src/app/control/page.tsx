@@ -109,7 +109,7 @@ function detectMediaTypeFromFile(file: File): "audio" | "video" | "presentation"
 }
 
 export default function ControlPage() {
-  const { songs, program, background, liveState, loading, refresh, api } = useLiveMedia();
+  const { songs, program, background, liveState, appVersion, loading, refresh, api } = useLiveMedia();
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [selectedServiceType, setSelectedServiceType] = useState("serviciul_divin");
   const [pendingServiceType, setPendingServiceType] = useState("");
@@ -577,6 +577,9 @@ export default function ControlPage() {
         <div className="top-row">
           <h1 className="title">Program</h1>
           <a className="muted" href="/settings">Setari</a>
+        </div>
+        <div className="update-test-badge">
+          Actualizare: {appVersion}
         </div>
         <section className={`control-service-picker ${servicePickerOpen || pendingServiceType !== selectedServiceType ? "open" : ""}`}>
           <button className="service-compact-btn" onClick={() => setServicePickerOpen((value) => !value)}>

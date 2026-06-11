@@ -14,6 +14,7 @@ type Bootstrap = {
   };
   serviceProgramTemplates: Record<string, ServiceTemplateItem[]>;
   liveState: LiveState;
+  appVersion?: string;
 };
 
 let socket: Socket | null = null;
@@ -34,6 +35,7 @@ export function useLiveMedia() {
   const [background, setBackground] = useState({ url: "/media/backgrounds/main.jpg", exists: false });
   const [serviceProgramTemplates, setServiceProgramTemplates] = useState<Record<string, ServiceTemplateItem[]>>({});
   const [liveState, setLiveState] = useState<LiveState | null>(null);
+  const [appVersion, setAppVersion] = useState("versiune necunoscuta");
   const [loading, setLoading] = useState(true);
 
   async function loadBootstrap(mounted = true) {
@@ -47,6 +49,7 @@ export function useLiveMedia() {
         setBackground(data.background);
         setServiceProgramTemplates(data.serviceProgramTemplates || {});
         setLiveState(data.liveState);
+        setAppVersion(data.appVersion || "versiune necunoscuta");
         setLoading(false);
       });
   }
@@ -232,5 +235,5 @@ export function useLiveMedia() {
     }
   }), []);
 
-  return { songs, programs, program, background, serviceProgramTemplates, liveState, loading, refresh: loadBootstrap, api };
+  return { songs, programs, program, background, serviceProgramTemplates, liveState, appVersion, loading, refresh: loadBootstrap, api };
 }

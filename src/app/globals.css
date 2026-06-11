@@ -82,6 +82,17 @@ button:disabled {
   gap: 18px;
 }
 
+.update-test-badge {
+  background: #fff4d6;
+  border: 1px solid #e0a800;
+  border-radius: 6px;
+  color: #5f4200;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.25;
+  padding: 8px 10px;
+}
+
 .sidebar-empty-state {
   border: 1px dashed var(--line);
   border-radius: 8px;

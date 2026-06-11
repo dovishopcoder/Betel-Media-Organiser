@@ -15,6 +15,7 @@ const { getServiceProgramTemplates, saveServiceProgramTemplate } = require("./sr
 const dev = process.env.NODE_ENV !== "production";
 const port = Number(process.env.PORT || 3000);
 const hostname = "0.0.0.0";
+const appVersion = "UPDATE-TEST-2026-06-11-1440";
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
@@ -96,7 +97,8 @@ app.prepare().then(() => {
       screens: repos.screens.list(),
       background: getMainBackground(),
       serviceProgramTemplates: getServiceProgramTemplates(),
-      liveState
+      liveState,
+      appVersion
     });
   });
 
