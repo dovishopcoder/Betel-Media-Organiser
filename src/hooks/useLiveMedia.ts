@@ -103,6 +103,12 @@ export function useLiveMedia() {
         body: JSON.stringify({ target, finish })
       });
     },
+    resetLive() {
+      return fetch("/api/live/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+    },
     async getProgramItemSlides(itemId: number): Promise<Slide[]> {
       const response = await fetch(`/api/program-items/${itemId}/slides`);
       if (!response.ok) return [];

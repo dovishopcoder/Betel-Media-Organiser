@@ -362,6 +362,13 @@ export default function ControlPage() {
     setServerSlides(null);
   }
 
+  async function handleResetLiveScreens() {
+    await api.resetLive();
+    setSelectedItemId(null);
+    setPreparedSlideIndex(0);
+    setServerSlides(null);
+  }
+
   function handleOpenFinishedBlock(item: ProgramItem) {
     setFinishedItemIds((current) => current.filter((itemId) => itemId !== item.id));
     setSelectedItemId(item.id);
@@ -971,6 +978,26 @@ export default function ControlPage() {
           <Monitor size={20} />
         </div>
         <p className="muted">Alege separat ce apare pe fiecare ecran.</p>
+
+        <section className="live-debug-panel">
+          <div>
+            <span className="item-type">Diagnostic live</span>
+            <strong>{appVersion}</strong>
+          </div>
+          <div className="live-debug-grid">
+            <div>
+              <span>Sala</span>
+              <strong>{mainOutput?.activeOutput || "necunoscut"}</strong>
+              <small>{mainOutput?.currentItem ? `${mainOutput.currentItem.id} - ${mainOutput.currentItem.title}` : "fara item live"}</small>
+            </div>
+            <div>
+              <span>Scena</span>
+              <strong>{stageOutput?.activeOutput || "necunoscut"}</strong>
+              <small>{stageOutput?.currentItem ? `${stageOutput.currentItem.id} - ${stageOutput.currentItem.title}` : "fara item live"}</small>
+            </div>
+          </div>
+          <button className="ghost-btn" onClick={handleResetLiveScreens}>Reset ecrane la fundal</button>
+        </section>
 
         {activeVideo ? (
           <section className="video-control-panel">
