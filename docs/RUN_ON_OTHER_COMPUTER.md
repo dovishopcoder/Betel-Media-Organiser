@@ -85,6 +85,25 @@ For the stage screen:
 5_DESCHIDE_ECRAN_SCENA_FULLSCREEN.bat
 ```
 
+## Update From the Internet
+
+If the church computer already has the portable app installed, you can update
+it from GitHub without copying a new USB package.
+
+Double click:
+
+```text
+6_ACTUALIZEAZA_DIN_INTERNET.bat
+```
+
+The update keeps local church data:
+
+- `data/`
+- `media/`
+
+It replaces the application files with the latest version from GitHub, runs
+`npm install`, and starts the control panel again.
+
 ## Move Existing Local Data
 
 The app stores church data locally. To move the same setup to another computer,

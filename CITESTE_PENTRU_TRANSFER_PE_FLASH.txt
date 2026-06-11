@@ -29,6 +29,14 @@ Pentru ecran sala poti rula:
 Pentru ecran scena poti rula:
 5_DESCHIDE_ECRAN_SCENA_FULLSCREEN.bat
 
+ACTUALIZARE PRIN INTERNET
+Daca noi modificam aplicatia de pe acest laptop si o punem pe GitHub, la biserica poti rula:
+6_ACTUALIZEAZA_DIN_INTERNET.bat
+
+Acest fisier descarca ultima versiune de pe GitHub si pastreaza datele locale:
+- data/
+- media/
+
 IMPORTANT
 - Pe calculatorul bisericii trebuie instalat Node.js LTS:
   https://nodejs.org/
