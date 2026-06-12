@@ -23,6 +23,7 @@ const defaultServiceProgramTemplates = {
     { type: "prayer", title: "Rugaciune", notes: "Moment de rugaciune" },
     { type: "announcements", title: "Anunturi", notes: "Anunturi pentru biserica" },
     { type: "song", title: "Cantare speciala", notes: "Text / fonograma / video karaoke" },
+    { type: "offering", title: "Daruri", notes: "Video intro / fonograma / fundal daruri" },
     { type: "sermon", title: "Predica", notes: "Mesaj / timer" },
     { type: "song", title: "Cantare finala", notes: "Text / fonograma / video karaoke" }
   ],
@@ -65,13 +66,33 @@ function readTemplates() {
   ensureTemplateFile();
   try {
     const parsed = JSON.parse(fs.readFileSync(templatesPath, "utf8"));
-    return {
+    const templates = {
       ...defaultServiceProgramTemplates,
       ...Object.fromEntries(Object.entries(parsed || {}).map(([key, value]) => [key, normalizeTemplateItems(value)]))
     };
+    return migrateTemplates(templates);
   } catch (_error) {
     return { ...defaultServiceProgramTemplates };
   }
+}
+
+function migrateTemplates(templates) {
+  const divineTemplate = Array.isArray(templates.serviciul_divin) ? templates.serviciul_divin : [];
+  const hasOffering = divineTemplate.some((item) => item.type === "offering");
+
+  if (!hasOffering) {
+    const offeringBlock = { type: "offering", title: "Daruri", notes: "Video intro / fonograma / fundal daruri" };
+    const insertAfterIndex = divineTemplate.findIndex((item) => item.type === "announcements" || item.type === "solo_song");
+    const insertIndex = insertAfterIndex >= 0 ? insertAfterIndex + 1 : Math.min(2, divineTemplate.length);
+    templates.serviciul_divin = [
+      ...divineTemplate.slice(0, insertIndex),
+      offeringBlock,
+      ...divineTemplate.slice(insertIndex)
+    ];
+    writeTemplates(templates);
+  }
+
+  return templates;
 }
 
 function writeTemplates(templates) {
