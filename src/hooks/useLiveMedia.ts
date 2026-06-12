@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import type { DisplayInfo, DisplaySettings, LiveState, Program, ServiceTemplateItem, Slide, Song } from "@/shared/types";
+import type { LiveState, Program, ServiceTemplateItem, Slide, Song } from "@/shared/types";
 
 type Bootstrap = {
   songs: Song[];
@@ -13,7 +13,6 @@ type Bootstrap = {
     exists: boolean;
   };
   serviceProgramTemplates: Record<string, ServiceTemplateItem[]>;
-  displaySettings: DisplaySettings;
   liveState: LiveState;
   appVersion?: string;
 };
@@ -35,7 +34,6 @@ export function useLiveMedia() {
   const [program, setProgram] = useState<Program | null>(null);
   const [background, setBackground] = useState({ url: "/media/backgrounds/main.jpg", exists: false });
   const [serviceProgramTemplates, setServiceProgramTemplates] = useState<Record<string, ServiceTemplateItem[]>>({});
-  const [displaySettings, setDisplaySettings] = useState<DisplaySettings>({ main: "", stage: "", control: "" });
   const [liveState, setLiveState] = useState<LiveState | null>(null);
   const [appVersion, setAppVersion] = useState("versiune necunoscuta");
   const [loading, setLoading] = useState(true);
@@ -50,7 +48,6 @@ export function useLiveMedia() {
         setProgram(data.activeProgram);
         setBackground(data.background);
         setServiceProgramTemplates(data.serviceProgramTemplates || {});
-        setDisplaySettings(data.displaySettings || { main: "", stage: "", control: "" });
         setLiveState(data.liveState);
         setAppVersion(data.appVersion || "versiune necunoscuta");
         setLoading(false);
@@ -111,23 +108,6 @@ export function useLiveMedia() {
         method: "POST",
         headers: { "Content-Type": "application/json" }
       });
-    },
-    async getDisplays(): Promise<{ displays: DisplayInfo[]; settings: DisplaySettings }> {
-      const response = await fetch("/api/displays");
-      if (!response.ok) return { displays: [], settings: displaySettings };
-      return response.json();
-    },
-    async saveDisplaySettings(settings: DisplaySettings) {
-      const response = await fetch("/api/display-settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings)
-      });
-      if (response.ok) {
-        const payload = await response.json();
-        setDisplaySettings(payload.settings || settings);
-      }
-      return response;
     },
     async getProgramItemSlides(itemId: number): Promise<Slide[]> {
       const response = await fetch(`/api/program-items/${itemId}/slides`);
@@ -261,5 +241,5 @@ export function useLiveMedia() {
     }
   }), []);
 
-  return { songs, programs, program, background, serviceProgramTemplates, displaySettings, liveState, appVersion, loading, refresh: loadBootstrap, api };
+  return { songs, programs, program, background, serviceProgramTemplates, liveState, appVersion, loading, refresh: loadBootstrap, api };
 }

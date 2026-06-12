@@ -47,21 +47,6 @@ export type ServiceTemplateItem = {
   notes?: string;
 };
 
-export type DisplayInfo = {
-  deviceName: string;
-  primary: boolean;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};
-
-export type DisplaySettings = {
-  main: string;
-  stage: string;
-  control: string;
-};
-
 export type LiveState = {
   currentItem: ProgramItem | null;
   currentSlideIndex: number;

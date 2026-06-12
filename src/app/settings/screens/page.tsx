@@ -1,31 +1,101 @@
 "use client";
 
-import { ImageUp, Monitor } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ImageUp, Monitor, Play, RefreshCw, Save, Square } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useLiveMedia } from "@/hooks/useLiveMedia";
-import type { DisplayInfo, DisplaySettings } from "@/shared/types";
+
+type ScreenConfig = {
+  operator: number;
+  main: number;
+  stage: number;
+};
+
+type DetectedScreen = {
+  deviceName: string;
+  displayIndex: number;
+  label: string;
+  primary: boolean;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  product?: string;
+  manufacturer?: string;
+  connection?: string;
+};
+
+type DisplaySettings = {
+  config: ScreenConfig;
+  screens: DetectedScreen[];
+};
 
 export default function ScreensSettingsPage() {
-  const { background, displaySettings, loading, api } = useLiveMedia();
+  const { background, loading, api } = useLiveMedia();
   const [backgroundStatus, setBackgroundStatus] = useState("");
-  const [displays, setDisplays] = useState<DisplayInfo[]>([]);
-  const [screenSettings, setScreenSettings] = useState<DisplaySettings>({ main: "", stage: "", control: "" });
+  const [displaySettings, setDisplaySettings] = useState<DisplaySettings | null>(null);
+  const [screenConfig, setScreenConfig] = useState<ScreenConfig>({ operator: 1, main: 2, stage: 3 });
   const [displayStatus, setDisplayStatus] = useState("");
 
-  async function loadDisplays() {
-    setDisplayStatus("Se detecteaza monitoarele...");
-    const payload = await api.getDisplays();
-    setDisplays(payload.displays || []);
-    setScreenSettings(payload.settings || displaySettings || { main: "", stage: "", control: "" });
-    setDisplayStatus(payload.displays?.length ? "Monitoarele au fost detectate." : "Nu s-au gasit monitoare prin aplicatie.");
+  const screenOptions = useMemo(() => {
+    return displaySettings?.screens || [];
+  }, [displaySettings]);
+
+  async function loadDisplaySettings() {
+    setDisplayStatus("Se citesc monitoarele...");
+    const response = await fetch("/api/display-settings");
+    const data = await response.json();
+    if (!response.ok) {
+      setDisplayStatus(data.error || "Nu s-au putut citi monitoarele.");
+      return;
+    }
+    setDisplaySettings(data);
+    setScreenConfig(data.config);
+    setDisplayStatus("Monitoarele au fost actualizate.");
   }
 
   useEffect(() => {
-    if (!loading) {
-      setScreenSettings(displaySettings || { main: "", stage: "", control: "" });
-      loadDisplays();
+    loadDisplaySettings();
+  }, []);
+
+  function updateScreenRole(role: keyof ScreenConfig, value: string) {
+    setScreenConfig((current) => ({ ...current, [role]: Number(value) }));
+  }
+
+  async function saveDisplaySettings() {
+    setDisplayStatus("Se salveaza setarea monitoarelor...");
+    const response = await fetch("/api/display-settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(screenConfig)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      setDisplayStatus(data.error || "Nu s-a putut salva setarea.");
+      return;
     }
-  }, [loading]);
+    setDisplaySettings(data);
+    setScreenConfig(data.config);
+    setDisplayStatus("Setarea monitoarelor a fost salvata.");
+  }
+
+  async function launchScreen(target: "main" | "stage" | "operator") {
+    const label = target === "main" ? "Sala" : target === "stage" ? "Scena" : "Operator";
+    setDisplayStatus(`Se porneste ${label}...`);
+    const response = await fetch("/api/display-settings/launch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ target })
+    });
+    const data = await response.json().catch(() => ({}));
+    setDisplayStatus(response.ok ? `${label} a fost pornit.` : data.error || `Nu s-a putut porni ${label}.`);
+  }
+
+  async function closeScreens() {
+    setDisplayStatus("Se inchid ferestrele de ecran...");
+    const response = await fetch("/api/display-settings/close", { method: "POST" });
+    const data = await response.json().catch(() => ({}));
+    setDisplayStatus(response.ok ? "Ferestrele de ecran au fost inchise." : data.error || "Nu s-au putut inchide ferestrele.");
+  }
 
   async function handleBackgroundUpload(file: File | null) {
     if (!file) return;
@@ -49,25 +119,6 @@ export default function ScreensSettingsPage() {
     reader.readAsDataURL(file);
   }
 
-  async function handleSaveDisplays() {
-    setDisplayStatus("Se salveaza rolurile monitoarelor...");
-    const response = await api.saveDisplaySettings(screenSettings);
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: "Nu s-au putut salva monitoarele." }));
-      setDisplayStatus(error.error);
-      return;
-    }
-    setDisplayStatus("Rolurile monitoarelor au fost salvate.");
-  }
-
-  const displayOptions = [
-    { value: "", label: "Alege monitor" },
-    ...displays.map((display) => ({
-      value: display.deviceName,
-      label: `${display.deviceName.replace("\\\\.\\", "")}${display.primary ? " - principal" : ""} (${display.width}x${display.height}, ${display.x},${display.y})`
-    }))
-  ];
-
   if (loading) {
     return <div className="settings-card muted">Se incarca ecranele...</div>;
   }
@@ -77,50 +128,63 @@ export default function ScreensSettingsPage() {
       <div className="settings-section-header">
         <div>
           <h2 className="title">Ecrane si fundal repaus</h2>
-          <p className="muted">Configurezi imaginea de repaus si deschizi rutele pentru sala si scena.</p>
+          <p className="muted">Configurezi rolurile monitoarelor, pornirea fullscreen si imaginea de repaus.</p>
         </div>
         <Monitor size={22} />
       </div>
 
       <div className="settings-two-column">
-        <div className="settings-card">
-          <div className="item-type">Monitoare detectate</div>
-          <div className="display-list">
-            {displays.length ? displays.map((display) => (
-              <div className="display-row" key={display.deviceName}>
-                <strong>{display.deviceName.replace("\\\\.\\", "")}</strong>
-                <span>{display.primary ? "Principal" : "Extins"} / {display.width}x{display.height} / pozitie {display.x},{display.y}</span>
-              </div>
-            )) : (
-              <div className="muted">Nu sunt monitoare detectate inca.</div>
-            )}
+        <div className="settings-card display-settings-card">
+          <div className="item-type">Monitoare</div>
+          <div className="display-role-grid">
+            <label>
+              <span>Operator</span>
+              <select value={screenConfig.operator} onChange={(event) => updateScreenRole("operator", event.target.value)}>
+                {screenOptions.map((screen) => (
+                  <option key={`operator-${screen.displayIndex}`} value={screen.displayIndex}>{screen.label}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Sala</span>
+              <select value={screenConfig.main} onChange={(event) => updateScreenRole("main", event.target.value)}>
+                {screenOptions.map((screen) => (
+                  <option key={`main-${screen.displayIndex}`} value={screen.displayIndex}>{screen.label}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Scena</span>
+              <select value={screenConfig.stage} onChange={(event) => updateScreenRole("stage", event.target.value)}>
+                {screenOptions.map((screen) => (
+                  <option key={`stage-${screen.displayIndex}`} value={screen.displayIndex}>{screen.label}</option>
+                ))}
+              </select>
+            </label>
           </div>
-          <button className="ghost-btn" onClick={loadDisplays}>Detecteaza din nou</button>
-          <div className="muted">{displayStatus}</div>
-        </div>
 
-        <div className="settings-card">
-          <div className="item-type">Roluri monitoare</div>
-          <label className="settings-field">
-            <span>Sala</span>
-            <select value={screenSettings.main} onChange={(event) => setScreenSettings((current) => ({ ...current, main: event.target.value }))}>
-              {displayOptions.map((option) => <option key={`main-${option.value}`} value={option.value}>{option.label}</option>)}
-            </select>
-          </label>
-          <label className="settings-field">
-            <span>Scena</span>
-            <select value={screenSettings.stage} onChange={(event) => setScreenSettings((current) => ({ ...current, stage: event.target.value }))}>
-              {displayOptions.map((option) => <option key={`stage-${option.value}`} value={option.value}>{option.label}</option>)}
-            </select>
-          </label>
-          <label className="settings-field">
-            <span>Operator</span>
-            <select value={screenSettings.control} onChange={(event) => setScreenSettings((current) => ({ ...current, control: event.target.value }))}>
-              {displayOptions.map((option) => <option key={`control-${option.value}`} value={option.value}>{option.label}</option>)}
-            </select>
-          </label>
-          <button className="primary-btn" onClick={handleSaveDisplays}>Salveaza monitoarele</button>
-          <div className="muted">Butoanele fullscreen vor folosi aceste roluri.</div>
+          <div className="display-action-row">
+            <button className="primary-btn" onClick={saveDisplaySettings}><Save size={16} /> Salveaza</button>
+            <button className="ghost-btn" onClick={loadDisplaySettings}><RefreshCw size={16} /> Reciteste</button>
+          </div>
+
+          <div className="detected-screen-list">
+            {screenOptions.map((screen) => (
+              <div className="detected-screen" key={screen.deviceName}>
+                <strong>{screen.label}</strong>
+                <span>{screen.connection || "conexiune necunoscuta"} {screen.primary ? "- principal" : ""}</span>
+                <small>{[screen.product, screen.manufacturer].filter(Boolean).join(" / ") || "monitor detectat"} - {screen.width}x{screen.height} la {screen.x},{screen.y}</small>
+              </div>
+            ))}
+          </div>
+
+          <div className="display-action-row">
+            <button className="primary-btn" onClick={() => launchScreen("main")}><Play size={16} /> Porneste Sala</button>
+            <button className="primary-btn" onClick={() => launchScreen("stage")}><Play size={16} /> Porneste Scena</button>
+            <button className="ghost-btn" onClick={() => launchScreen("operator")}><Monitor size={16} /> Operator</button>
+            <button className="ghost-btn" onClick={closeScreens}><Square size={16} /> Inchide</button>
+          </div>
+          <div className="muted">{displayStatus || "Alege rolul fiecarui monitor, salveaza, apoi porneste ecranele."}</div>
         </div>
 
         <div className="settings-card">
@@ -139,7 +203,7 @@ export default function ScreensSettingsPage() {
             <a href="/main-screen" target="_blank">Deschide ecran sala</a>
             <a href="/stage-screen" target="_blank">Deschide ecran scena</a>
           </div>
-          <div className="muted">Pentru sala se deschide fereastra pe monitorul dorit si se activeaza fullscreen/kiosk.</div>
+          <div className="muted">Aceste linkuri deschid rutele in browser. Pentru fullscreen pe monitorul ales foloseste butoanele de mai sus.</div>
         </div>
       </div>
     </section>

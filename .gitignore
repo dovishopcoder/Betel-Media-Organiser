@@ -17,6 +17,7 @@ data/*.db
 data/*.db-*
 data/service-templates.json
 data/display-settings.json
+data/screen-config.json
 media/*
 !media/.gitkeep
 

@@ -2,9 +2,6 @@ param(
   [ValidateSet("main-screen", "stage-screen", "control")]
   [string]$Route = "main-screen",
 
-  [ValidateSet("", "main", "stage", "control")]
-  [string]$Role = "",
-
   [ValidateSet("primary", "secondary")]
   [string]$Display = "secondary",
 
@@ -23,19 +20,6 @@ Add-Type -AssemblyName System.Windows.Forms
 $screens = [System.Windows.Forms.Screen]::AllScreens
 
 $targetScreen = $null
-$settingsPath = Join-Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) "data\display-settings.json"
-if ($Role -and (Test-Path $settingsPath)) {
-  try {
-    $settings = Get-Content -LiteralPath $settingsPath -Raw | ConvertFrom-Json
-    $deviceName = [string]$settings.$Role
-    if ($deviceName) {
-      $targetScreen = $screens | Where-Object { $_.DeviceName -eq $deviceName } | Select-Object -First 1
-    }
-  } catch {
-    Write-Host "Nu s-au putut citi setarile monitoarelor: $($_.Exception.Message)"
-  }
-}
-
 if ($DisplayIndex -gt 0) {
   $targetScreen = $screens | Where-Object { $_.DeviceName -match "DISPLAY$DisplayIndex$" } | Select-Object -First 1
   if (-not $targetScreen -and $screens.Length -ge $DisplayIndex) {
@@ -86,11 +70,26 @@ if (-not $edgePath) {
 $url = "http://localhost:$Port/$Route"
 $bounds = $targetScreen.Bounds
 $profileDir = Join-Path $env:TEMP "betel-media-$Route"
+$defaultProfileDir = Join-Path $profileDir "Default"
+$preferencesPath = Join-Path $defaultProfileDir "Preferences"
+
+New-Item -ItemType Directory -Force -Path $defaultProfileDir | Out-Null
+$preferences = @{
+  translate = @{
+    enabled = $false
+  }
+  translate_site_blacklist = @("localhost")
+  intl = @{
+    accept_languages = "ro,en-US,en"
+  }
+}
+$preferences | ConvertTo-Json -Depth 5 | Set-Content -Path $preferencesPath -Encoding UTF8
 
 $arguments = @(
   "--new-window",
   "--user-data-dir=$profileDir",
   "--no-first-run",
+  "--disable-translate",
   "--autoplay-policy=no-user-gesture-required",
   "--window-position=$($bounds.X),$($bounds.Y)",
   "--window-size=$($bounds.Width),$($bounds.Height)"

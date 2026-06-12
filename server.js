@@ -1,6 +1,7 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const { execFile, execFileSync } = require("child_process");
 const express = require("express");
 const multer = require("multer");
 const next = require("next");
@@ -11,7 +12,6 @@ const { createIdleOutputState, createInitialLiveState, createOutputState, getNex
 const { getMainBackground, saveMainBackground } = require("./src/server/backgrounds");
 const { detectMediaType, ensureLibraryDir, isAllowedMedia, sanitizeName, saveMediaFile } = require("./src/server/media-files");
 const { getServiceProgramTemplates, saveServiceProgramTemplate } = require("./src/server/service-templates");
-const { detectDisplays, getDisplaySettings, saveDisplaySettings } = require("./src/server/display-settings");
 
 const dev = process.env.NODE_ENV !== "production";
 const port = Number(process.env.PORT || 3000);
@@ -19,9 +19,160 @@ const hostname = "0.0.0.0";
 const appVersion = "BETEL-PORTABIL-2026-06-11";
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
+const screenConfigPath = path.join(__dirname, "data", "screen-config.json");
 
 ensureDatabase();
 ensureLibraryDir();
+
+function getDefaultScreenConfig() {
+  return {
+    operator: 1,
+    main: 2,
+    stage: 3
+  };
+}
+
+function readScreenConfig() {
+  try {
+    if (!fs.existsSync(screenConfigPath)) return getDefaultScreenConfig();
+    return { ...getDefaultScreenConfig(), ...JSON.parse(fs.readFileSync(screenConfigPath, "utf8")) };
+  } catch (_error) {
+    return getDefaultScreenConfig();
+  }
+}
+
+function saveScreenConfig(input) {
+  const config = getDefaultScreenConfig();
+  for (const key of ["operator", "main", "stage"]) {
+    const value = Number(input?.[key]);
+    if (Number.isInteger(value) && value > 0 && value < 10) {
+      config[key] = value;
+    }
+  }
+  fs.mkdirSync(path.dirname(screenConfigPath), { recursive: true });
+  fs.writeFileSync(screenConfigPath, `${JSON.stringify(config, null, 2)}\n`);
+  return config;
+}
+
+function runPowerShell(args) {
+  return execFileSync("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", ...args], {
+    cwd: __dirname,
+    encoding: "utf8",
+    windowsHide: true
+  });
+}
+
+function getConnectedScreens() {
+  const script = `
+Add-Type -AssemblyName System.Windows.Forms
+$screens = [System.Windows.Forms.Screen]::AllScreens | ForEach-Object {
+  [pscustomobject]@{
+    deviceName = $_.DeviceName
+    displayIndex = [int](($_.DeviceName -replace '^.*DISPLAY','') -replace '[^0-9].*$','')
+    primary = $_.Primary
+    x = $_.Bounds.X
+    y = $_.Bounds.Y
+    width = $_.Bounds.Width
+    height = $_.Bounds.Height
+    workingWidth = $_.WorkingArea.Width
+    workingHeight = $_.WorkingArea.Height
+  }
+}
+$ids = Get-CimInstance -Namespace root\\wmi -ClassName WmiMonitorID | ForEach-Object {
+  [pscustomobject]@{
+    instanceName = $_.InstanceName
+    manufacturer = (($_.ManufacturerName | Where-Object { $_ -ne 0 } | ForEach-Object { [char]$_ }) -join '')
+    product = (($_.UserFriendlyName | Where-Object { $_ -ne 0 } | ForEach-Object { [char]$_ }) -join '')
+    serial = (($_.SerialNumberID | Where-Object { $_ -ne 0 } | ForEach-Object { [char]$_ }) -join '')
+  }
+}
+$connections = Get-CimInstance -Namespace root\\wmi -ClassName WmiMonitorConnectionParams | ForEach-Object {
+  [pscustomobject]@{
+    instanceName = $_.InstanceName
+    videoOutputTechnology = $_.VideoOutputTechnology
+    connection = switch ($_.VideoOutputTechnology) {
+      4 { 'DVI-D' }
+      5 { 'HDMI' }
+      10 { 'DisplayPort' }
+      default { 'Video ' + $_.VideoOutputTechnology }
+    }
+  }
+}
+[pscustomobject]@{ screens = @($screens); monitorIds = @($ids); connections = @($connections) } | ConvertTo-Json -Depth 5
+`;
+  const output = runPowerShell(["-Command", script]);
+  const detected = JSON.parse(output);
+  const monitorIds = Array.isArray(detected.monitorIds) ? detected.monitorIds : [detected.monitorIds].filter(Boolean);
+  const connections = Array.isArray(detected.connections) ? detected.connections : [detected.connections].filter(Boolean);
+  const screens = Array.isArray(detected.screens) ? detected.screens : [detected.screens].filter(Boolean);
+
+  return screens
+    .sort((a, b) => Number(a.displayIndex) - Number(b.displayIndex))
+    .map((screen, index) => {
+      const monitor = monitorIds[index] || {};
+      const connection = connections[index] || {};
+      return {
+        ...screen,
+        displayIndex: Number(screen.displayIndex),
+        label: `DISPLAY${screen.displayIndex}`,
+        product: monitor.product || "",
+        manufacturer: monitor.manufacturer || "",
+        serial: monitor.serial || "",
+        connection: connection.connection || "",
+        videoOutputTechnology: connection.videoOutputTechnology ?? null
+      };
+    });
+}
+
+function launchConfiguredScreen(target) {
+  const config = readScreenConfig();
+  if (target === "operator") {
+    execFile("powershell", ["-NoProfile", "-Command", `Start-Process 'http://localhost:${port}/control'`], {
+      cwd: __dirname,
+      windowsHide: true
+    });
+    return { route: "control", displayIndex: config.operator, kiosk: false };
+  }
+
+  const targetConfig = {
+    main: { route: "main-screen", displayIndex: config.main, kiosk: true },
+    stage: { route: "stage-screen", displayIndex: config.stage, kiosk: true }
+  }[target];
+
+  if (!targetConfig) {
+    throw new Error("Ecran necunoscut.");
+  }
+
+  const args = [
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    path.join(__dirname, "scripts", "launch-screen.ps1"),
+    "-Route",
+    targetConfig.route,
+    "-DisplayIndex",
+    String(targetConfig.displayIndex),
+    "-Port",
+    String(port)
+  ];
+  if (targetConfig.kiosk) args.push("-Kiosk");
+
+  execFile("powershell", args, { cwd: __dirname, windowsHide: true }, (error) => {
+    if (error) console.error(`Could not launch ${target}:`, error.message);
+  });
+
+  return targetConfig;
+}
+
+function closeLaunchedScreens() {
+  const script = `
+Get-CimInstance Win32_Process |
+  Where-Object { $_.Name -eq 'msedge.exe' -and $_.CommandLine -match 'betel-media-(main-screen|stage-screen|control)|localhost:3000' } |
+  ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+`;
+  runPowerShell(["-Command", script]);
+}
 
 const mediaUpload = multer({
   storage: multer.diskStorage({
@@ -98,29 +249,9 @@ app.prepare().then(() => {
       screens: repos.screens.list(),
       background: getMainBackground(),
       serviceProgramTemplates: getServiceProgramTemplates(),
-      displaySettings: getDisplaySettings(),
       liveState,
       appVersion
     });
-  });
-
-  expressApp.get("/api/displays", (_req, res) => {
-    try {
-      res.json({
-        displays: detectDisplays(),
-        settings: getDisplaySettings()
-      });
-    } catch (error) {
-      res.status(500).json({ error: error.message, displays: [], settings: getDisplaySettings() });
-    }
-  });
-
-  expressApp.put("/api/display-settings", (req, res) => {
-    try {
-      res.json({ settings: saveDisplaySettings(req.body || {}) });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
   });
 
   expressApp.put("/api/service-templates/:serviceType", (req, res) => {
@@ -137,6 +268,45 @@ app.prepare().then(() => {
       const background = saveMainBackground(req.body);
       io.emit("background:update", background);
       res.json(background);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  expressApp.get("/api/display-settings", (_req, res) => {
+    try {
+      res.json({
+        config: readScreenConfig(),
+        screens: getConnectedScreens()
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message, config: readScreenConfig(), screens: [] });
+    }
+  });
+
+  expressApp.put("/api/display-settings", (req, res) => {
+    try {
+      const config = saveScreenConfig(req.body || {});
+      res.json({ config, screens: getConnectedScreens() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  expressApp.post("/api/display-settings/launch", (req, res) => {
+    try {
+      const target = req.body?.target;
+      const launched = launchConfiguredScreen(target);
+      res.json({ launched });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  expressApp.post("/api/display-settings/close", (_req, res) => {
+    try {
+      closeLaunchedScreens();
+      res.json({ ok: true });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
